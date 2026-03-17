@@ -6,6 +6,7 @@
 <title>家計・仕事管理アプリ</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --primary: #9B9DD3;
@@ -1750,6 +1751,28 @@ body.sidebar-open #mob-hamburger span:nth-child(3) { transform: translateY(-7.5p
     </div>
   </div>
 
+  <!-- ☁️ クラウド同期設定 -->
+  <div class="master-section" id="sb-section">
+    <div class="master-section-title">☁️ クラウド同期設定（Supabase）</div>
+    <div class="master-section-sub">設定するとスマホ・PCでデータを共有できます。<a href="https://supabase.com" target="_blank">Supabase</a>の無料アカウントが必要です。</div>
+    <div style="display:flex;flex-direction:column;gap:10px;max-width:600px;margin-top:12px;">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <label style="min-width:120px;font-size:13px;font-weight:600;">Project URL</label>
+        <input id="sb-url" type="text" placeholder="https://xxxx.supabase.co" style="flex:1;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;" value="">
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <label style="min-width:120px;font-size:13px;font-weight:600;">Anon Key</label>
+        <input id="sb-key" type="password" placeholder="eyJhbGciOiJIUzI1NiIs..." style="flex:1;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;" value="">
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="sbSaveSettings()">💾 設定を保存</button>
+        <button class="btn btn-primary" onclick="sbPushAll()">⬆️ クラウドへアップロード</button>
+        <button class="btn btn-primary" onclick="sbPullAll()">⬇️ クラウドから同期</button>
+      </div>
+      <div id="sb-status" style="font-size:12px;color:var(--text-muted);"></div>
+    </div>
+  </div>
+
   <!-- データ概要 -->
   <div class="master-section">
     <div class="master-section-title">📊 現在のデータ概要</div>
@@ -1863,7 +1886,74 @@ const INITIAL_BALANCE = { '三井住友': 114, 'みずほ': 205, 'ひろぎん':
 function load(key, def) {
   try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; } catch { return def; }
 }
-function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+function save(key, val) {
+  localStorage.setItem(key, JSON.stringify(val));
+  _sbSave(key, val);
+}
+
+// ========== Supabase クラウド同期 ==========
+let _sb = null;
+const _SB_KEYS = ['kk_transactions','kk_expenses','kk_jobs','kk_rules','kk_balances',
+                  'kk_detail_items','kk_roommate','kk_extra_months','kk_work_jobs'];
+
+function sbInit() {
+  const url = localStorage.getItem('kk_sb_url') || '';
+  const key = localStorage.getItem('kk_sb_key') || '';
+  if (url && key && typeof supabase !== 'undefined') {
+    try { _sb = supabase.createClient(url, key); } catch(e) { _sb = null; }
+  }
+}
+
+async function _sbSave(key, val) {
+  if (!_sb) return;
+  try { await _sb.from('kk_data').upsert({ key, value: val, updated_at: new Date().toISOString() }); }
+  catch(e) { console.warn('Cloud save error:', e); }
+}
+
+async function sbPullAll() {
+  if (!_sb) { showToast('⚠️ クラウドが未設定です'); return; }
+  try {
+    showToast('⬇️ クラウドから同期中...');
+    const { data, error } = await _sb.from('kk_data').select('*');
+    if (error) throw error;
+    if (!data || data.length === 0) { showToast('クラウドにデータがありません'); return; }
+    data.forEach(row => { localStorage.setItem(row.key, JSON.stringify(row.value)); });
+    transactions  = load('kk_transactions', []);
+    expenses      = load('kk_expenses', []);
+    jobs          = load('kk_jobs', []);
+    rules         = load('kk_rules', []);
+    balances      = load('kk_balances', { ...INITIAL_BALANCE });
+    detailItems   = load('kk_detail_items', {});
+    roommateData  = load('kk_roommate') || {};
+    extraMonths   = load('kk_extra_months') || [];
+    afterMasterChange();
+    showToast('✅ クラウドから同期しました（' + data.length + '件）');
+  } catch(e) { showToast('❌ 同期エラー: ' + e.message); }
+}
+
+async function sbPushAll() {
+  if (!_sb) { showToast('⚠️ クラウドが未設定です'); return; }
+  try {
+    showToast('⬆️ クラウドへアップロード中...');
+    for (const k of _SB_KEYS) {
+      const v = localStorage.getItem(k);
+      if (v) await _sbSave(k, JSON.parse(v));
+    }
+    showToast('✅ クラウドへアップロード完了');
+  } catch(e) { showToast('❌ アップロードエラー: ' + e.message); }
+}
+
+function sbSaveSettings() {
+  const url = (document.getElementById('sb-url')?.value || '').trim();
+  const key = (document.getElementById('sb-key')?.value || '').trim();
+  localStorage.setItem('kk_sb_url', url);
+  localStorage.setItem('kk_sb_key', key);
+  sbInit();
+  showToast(url && key ? '✅ クラウド設定を保存しました' : 'クラウド設定をクリアしました');
+  renderMaster();
+}
+
+sbInit();
 
 let transactions  = load('kk_transactions', []);
 let expenses      = load('kk_expenses', []);
@@ -3320,6 +3410,14 @@ function renderReport() {
 
 // ========== マスター管理ページ ==========
 function renderMaster() {
+  // --- クラウド設定の値を復元 ---
+  const sbUrlEl = document.getElementById('sb-url');
+  const sbKeyEl = document.getElementById('sb-key');
+  if (sbUrlEl) sbUrlEl.value = localStorage.getItem('kk_sb_url') || '';
+  if (sbKeyEl) sbKeyEl.value = localStorage.getItem('kk_sb_key') || '';
+  const sbStatusEl = document.getElementById('sb-status');
+  if (sbStatusEl) sbStatusEl.textContent = _sb ? '🟢 クラウド接続済み' : '⚪ クラウド未設定';
+
   // --- データ概要 ---
   const months = [...new Set(transactions.map(t => t.date.slice(0,7)))].sort();
   const banks  = [...new Set(transactions.map(t => t.bank))].sort();
