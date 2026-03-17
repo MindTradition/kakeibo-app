@@ -24,6 +24,41 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Hiragino Sans', 'Meiryo', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
 
+  /* フローティングクラウドボタン */
+  #float-cloud-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9998;
+    background: linear-gradient(135deg, #9B9DD3, #7C7EB8);
+    color: #fff;
+    border-radius: 50px;
+    padding: 11px 20px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 18px rgba(124,126,184,0.45);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    transition: all 0.2s;
+    user-select: none;
+    border: none;
+    outline: none;
+  }
+  #float-cloud-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 22px rgba(124,126,184,0.55);
+    background: linear-gradient(135deg, #7C7EB8, #6060A0);
+  }
+  #float-cloud-btn:active { transform: translateY(0); }
+  #float-cloud-btn.saving  { background: linear-gradient(135deg, #F2A96B, #E8924A); }
+  #float-cloud-btn.saved   { background: linear-gradient(135deg, #6DB8D8, #4A9EC0); }
+  #float-cloud-btn.error   { background: linear-gradient(135deg, #E8694E, #C84830); }
+  @media (max-width: 768px) {
+    #float-cloud-btn { bottom: 16px; right: 16px; padding: 10px 16px; font-size: 12px; }
+  }
+
   /* サイドバー */
   #sidebar {
     width: var(--sidebar-w);
@@ -1907,9 +1942,21 @@ function sbInit() {
 }
 
 let _sbSaveTimer = null;
+
+// フローティングボタンの状態を更新するヘルパー
+function _setCloudBtn(state, text) {
+  const btn = document.getElementById('float-cloud-btn');
+  const icon = document.getElementById('float-cloud-icon');
+  const label = document.getElementById('float-cloud-text');
+  if (!btn) return;
+  btn.className = state; // saving / saved / error / '' (default)
+  if (icon) icon.textContent = state === 'saving' ? '🔄' : state === 'saved' ? '✅' : state === 'error' ? '⚠️' : '☁️';
+  if (label) label.textContent = text;
+}
+
 async function _sbSave(key, val) {
   if (!_sb) return;
-  // 保存中バッジを表示
+  // サイドバーバッジを表示
   const badge = document.getElementById('sb-sync-badge');
   if (badge) {
     badge.style.display = 'block';
@@ -1917,14 +1964,17 @@ async function _sbSave(key, val) {
     badge.style.color = '#F2A96B';
     badge.textContent = '☁️ 保存中...';
   }
+  // フローティングボタンを「保存中」状態に
+  _setCloudBtn('saving', '保存中...');
   try {
     await _sb.from('kk_data').upsert({ key, value: val, updated_at: new Date().toISOString() });
-    // 保存完了バッジ
+    // 保存完了
     if (badge) {
       badge.style.background = 'rgba(109,184,216,0.15)';
       badge.style.color = '#6DB8D8';
       badge.textContent = '☁️ 保存済み';
     }
+    _setCloudBtn('saved', '保存済み ✓');
   } catch(e) {
     console.warn('Cloud save error:', e);
     if (badge) {
@@ -1932,11 +1982,13 @@ async function _sbSave(key, val) {
       badge.style.color = '#E8694E';
       badge.textContent = '⚠️ 保存失敗';
     }
+    _setCloudBtn('error', '保存失敗');
   }
-  // 3秒後にバッジを非表示
+  // 3秒後にデフォルトに戻す
   if (_sbSaveTimer) clearTimeout(_sbSaveTimer);
   _sbSaveTimer = setTimeout(() => {
     if (badge) badge.style.display = 'none';
+    _setCloudBtn('', 'クラウドへ保存');
   }, 3000);
 }
 // Reactコンポーネントからも呼べるようwindowに公開
@@ -1986,15 +2038,25 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 async function sbPushAll() {
-  if (!_sb) { showToast('⚠️ クラウドが未設定です'); return; }
+  if (!_sb) { showToast('⚠️ クラウドが未設定です（マスター管理でURLとキーを設定）'); return; }
+  _setCloudBtn('saving', 'アップロード中...');
   try {
     showToast('⬆️ クラウドへアップロード中...');
     for (const k of _SB_KEYS) {
       const v = localStorage.getItem(k);
-      if (v) await _sbSave(k, JSON.parse(v));
+      if (v) {
+        await _sb.from('kk_data').upsert({ key: k, value: JSON.parse(v), updated_at: new Date().toISOString() });
+      }
     }
-    showToast('✅ クラウドへアップロード完了');
-  } catch(e) { showToast('❌ アップロードエラー: ' + e.message); }
+    _setCloudBtn('saved', '完了 ✓');
+    showToast('✅ クラウドへアップロード完了（' + _SB_KEYS.length + '件）');
+    if (_sbSaveTimer) clearTimeout(_sbSaveTimer);
+    _sbSaveTimer = setTimeout(() => { _setCloudBtn('', 'クラウドへ保存'); }, 3000);
+  } catch(e) {
+    _setCloudBtn('error', '失敗');
+    showToast('❌ アップロードエラー: ' + e.message);
+    setTimeout(() => { _setCloudBtn('', 'クラウドへ保存'); }, 3000);
+  }
 }
 
 function sbSaveSettings() {
@@ -4352,6 +4414,10 @@ function todayStr() {
 
 let simIdCounter = 1;
 function newSimId() { return simIdCounter++; }
+function simSyncCounter(entries) {
+  const maxId = entries.reduce((m, e) => Math.max(m, Number(e.id) || 0), 0);
+  if (maxId >= simIdCounter) simIdCounter = maxId + 1;
+}
 
 function emptyForm(type) {
   return { type, name: "", category: type === "income" ? "給与" : "家賃・住宅ローン", amount: "", freq: "once", startDate: todayStr(), endDate: "", done: false };
@@ -4431,7 +4497,11 @@ function SummaryCard({ label, actualAmt, plannedAmt, accentColor, dotColor }) {
 
 function SimApp() {
   const [entries, setEntries] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('kk_sim_entries') || '[]'); } catch { return []; }
+    try {
+      const saved = JSON.parse(localStorage.getItem('kk_sim_entries') || '[]');
+      simSyncCounter(saved); // 既存IDより大きい値からカウンター開始
+      return saved;
+    } catch { return []; }
   });
   const [form, setForm]       = useState(emptyForm("income"));
   const [showReset, setShowReset] = useState(false);
@@ -4625,6 +4695,11 @@ const simRootEl = document.getElementById("sim-root");
 let _simReactRoot = null;
 function _mountSim() {
   if (!simRootEl) return;
+  // 再マウント前にIDカウンターを同期
+  try {
+    const saved = JSON.parse(localStorage.getItem('kk_sim_entries') || '[]');
+    simSyncCounter(saved);
+  } catch {}
   if (_simReactRoot) { _simReactRoot.unmount(); _simReactRoot = null; }
   _simReactRoot = ReactDOM.createRoot(simRootEl);
   _simReactRoot.render(<SimApp />);
@@ -5234,6 +5309,12 @@ window.addEventListener('resize', function() {
   }
 });
 </script>
+
+<!-- フローティングクラウド保存ボタン -->
+<div id="float-cloud-btn" onclick="sbPushAll()" title="クラウドへ全データを保存">
+  <span id="float-cloud-icon">☁️</span>
+  <span id="float-cloud-text">クラウドへ保存</span>
+</div>
 
 </body>
 </html>
