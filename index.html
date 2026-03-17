@@ -783,6 +783,7 @@ body.sidebar-open #mob-hamburger span:nth-child(3) { transform: translateY(-7.5p
 <!-- サイドバー -->
 <div id="sidebar">
   <div class="logo">💰 家計管理</div>
+  <div id="sb-sync-badge" style="display:none;margin:0 12px 8px;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:600;text-align:center;transition:all 0.3s;">☁️ 保存中...</div>
   <div class="month-display">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
       <div class="month-label">表示月</div>
@@ -1905,10 +1906,38 @@ function sbInit() {
   }
 }
 
+let _sbSaveTimer = null;
 async function _sbSave(key, val) {
   if (!_sb) return;
-  try { await _sb.from('kk_data').upsert({ key, value: val, updated_at: new Date().toISOString() }); }
-  catch(e) { console.warn('Cloud save error:', e); }
+  // 保存中バッジを表示
+  const badge = document.getElementById('sb-sync-badge');
+  if (badge) {
+    badge.style.display = 'block';
+    badge.style.background = 'rgba(255,200,50,0.15)';
+    badge.style.color = '#F2A96B';
+    badge.textContent = '☁️ 保存中...';
+  }
+  try {
+    await _sb.from('kk_data').upsert({ key, value: val, updated_at: new Date().toISOString() });
+    // 保存完了バッジ
+    if (badge) {
+      badge.style.background = 'rgba(109,184,216,0.15)';
+      badge.style.color = '#6DB8D8';
+      badge.textContent = '☁️ 保存済み';
+    }
+  } catch(e) {
+    console.warn('Cloud save error:', e);
+    if (badge) {
+      badge.style.background = 'rgba(232,105,78,0.15)';
+      badge.style.color = '#E8694E';
+      badge.textContent = '⚠️ 保存失敗';
+    }
+  }
+  // 3秒後にバッジを非表示
+  if (_sbSaveTimer) clearTimeout(_sbSaveTimer);
+  _sbSaveTimer = setTimeout(() => {
+    if (badge) badge.style.display = 'none';
+  }, 3000);
 }
 // Reactコンポーネントからも呼べるようwindowに公開
 window._sbSave = _sbSave;
