@@ -4418,6 +4418,27 @@ function simSyncCounter(entries) {
   const maxId = entries.reduce((m, e) => Math.max(m, Number(e.id) || 0), 0);
   if (maxId >= simIdCounter) simIdCounter = maxId + 1;
 }
+// 重複IDを修正する（既存データに収入・支出で同じIDが存在する場合の対策）
+function fixDuplicateIds(entries) {
+  const seenIds = new Set();
+  let hasFixed = false;
+  const result = entries.map(e => {
+    const id = Number(e.id);
+    if (!id || seenIds.has(id)) {
+      const newId = newSimId(); // simSyncCounter後なので安全なIDが取得できる
+      seenIds.add(newId);
+      hasFixed = true;
+      return { ...e, id: newId };
+    }
+    seenIds.add(id);
+    return e;
+  });
+  // 修正があった場合はlocalStorageを即時更新
+  if (hasFixed) {
+    try { localStorage.setItem('kk_sim_entries', JSON.stringify(result)); } catch {}
+  }
+  return result;
+}
 
 function emptyForm(type) {
   return { type, name: "", category: type === "income" ? "給与" : "家賃・住宅ローン", amount: "", freq: "once", startDate: todayStr(), endDate: "", done: false };
@@ -4499,8 +4520,8 @@ function SimApp() {
   const [entries, setEntries] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem('kk_sim_entries') || '[]');
-      simSyncCounter(saved); // 既存IDより大きい値からカウンター開始
-      return saved;
+      simSyncCounter(saved);       // ① 既存IDより大きい値からカウンター開始
+      return fixDuplicateIds(saved); // ② 重複IDを修正（収入と支出で同じIDがあるバグ対策）
     } catch { return []; }
   });
   const [form, setForm]       = useState(emptyForm("income"));
@@ -4695,10 +4716,11 @@ const simRootEl = document.getElementById("sim-root");
 let _simReactRoot = null;
 function _mountSim() {
   if (!simRootEl) return;
-  // 再マウント前にIDカウンターを同期
+  // 再マウント前にIDカウンターを同期し、重複IDも修正
   try {
     const saved = JSON.parse(localStorage.getItem('kk_sim_entries') || '[]');
     simSyncCounter(saved);
+    fixDuplicateIds(saved); // 重複があれば自動修正＆localStorage更新
   } catch {}
   if (_simReactRoot) { _simReactRoot.unmount(); _simReactRoot = null; }
   _simReactRoot = ReactDOM.createRoot(simRootEl);
