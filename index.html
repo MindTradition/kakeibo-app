@@ -1894,7 +1894,8 @@ function save(key, val) {
 // ========== Supabase クラウド同期 ==========
 let _sb = null;
 const _SB_KEYS = ['kk_transactions','kk_expenses','kk_jobs','kk_rules','kk_balances',
-                  'kk_detail_items','kk_roommate','kk_extra_months','kk_work_jobs'];
+                  'kk_detail_items','kk_roommate','kk_extra_months','kk_work_jobs',
+                  'kk_alert_days','kk_submission'];
 
 function sbInit() {
   const url = localStorage.getItem('kk_sb_url') || '';
@@ -1910,14 +1911,16 @@ async function _sbSave(key, val) {
   catch(e) { console.warn('Cloud save error:', e); }
 }
 
-async function sbPullAll() {
-  if (!_sb) { showToast('⚠️ クラウドが未設定です'); return; }
+async function sbPullAll(silent) {
+  if (!_sb) { if (!silent) showToast('⚠️ クラウドが未設定です'); return; }
   try {
-    showToast('⬇️ クラウドから同期中...');
+    if (!silent) showToast('⬇️ クラウドから同期中...');
     const { data, error } = await _sb.from('kk_data').select('*');
     if (error) throw error;
-    if (!data || data.length === 0) { showToast('クラウドにデータがありません'); return; }
+    if (!data || data.length === 0) { if (!silent) showToast('クラウドにデータがありません'); return; }
+    // localStorageに全データを書き込む
     data.forEach(row => { localStorage.setItem(row.key, JSON.stringify(row.value)); });
+    // 全変数を再読み込み
     transactions  = load('kk_transactions', []);
     expenses      = load('kk_expenses', []);
     jobs          = load('kk_jobs', []);
@@ -1926,10 +1929,28 @@ async function sbPullAll() {
     detailItems   = load('kk_detail_items', {});
     roommateData  = load('kk_roommate') || {};
     extraMonths   = load('kk_extra_months') || [];
-    afterMasterChange();
-    showToast('✅ クラウドから同期しました（' + data.length + '件）');
-  } catch(e) { showToast('❌ 同期エラー: ' + e.message); }
+    // 仕事進捗変数を再読み込み
+    jpJobs      = JSON.parse(localStorage.getItem('kk_work_jobs') || '[]');
+    jpAlertDays = parseInt(localStorage.getItem('kk_alert_days') || '7');
+    // 全画面を再描画
+    renderDashboard();
+    renderTransactions();
+    renderDetail();
+    renderRoommate();
+    renderMaster();
+    initMonthSelectors();
+    if (typeof renderJobProgress === 'function') renderJobProgress();
+    if (!silent) showToast('✅ クラウドから同期しました（' + data.length + '件）');
+  } catch(e) { if (!silent) showToast('❌ 同期エラー: ' + e.message); }
 }
+
+// ページ読み込み時に自動同期
+window.addEventListener('DOMContentLoaded', () => {
+  if (_sb) {
+    showToast('☁️ クラウドと自動同期中...');
+    sbPullAll(true).then(() => showToast('✅ 自動同期完了'));
+  }
+});
 
 async function sbPushAll() {
   if (!_sb) { showToast('⚠️ クラウドが未設定です'); return; }
@@ -4735,7 +4756,10 @@ function jpSwitchTab(tab) {
   jpRenderTable();
 }
 
-function jpSave() { localStorage.setItem('kk_work_jobs', JSON.stringify(jpJobs)); }
+function jpSave() {
+  localStorage.setItem('kk_work_jobs', JSON.stringify(jpJobs));
+  _sbSave('kk_work_jobs', jpJobs);
+}
 function jpFmt(n)  { return n ? '¥' + Math.abs(n).toLocaleString() : '—'; }
 
 // ===== FEE CALC =====
@@ -5118,6 +5142,7 @@ function jpOpenAlertSettings() {
 function jpSaveAlertSettings() {
   jpAlertDays = parseInt(document.getElementById('alert-days-sel').value);
   localStorage.setItem('kk_alert_days', jpAlertDays);
+  _sbSave('kk_alert_days', jpAlertDays);
   jpCloseModal('jp-modal-alert'); jpRenderTable();
   jpShowToast(`アラートを「${jpAlertDays}日以内」に設定しました`);
 }
