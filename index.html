@@ -1895,7 +1895,7 @@ function save(key, val) {
 let _sb = null;
 const _SB_KEYS = ['kk_transactions','kk_expenses','kk_jobs','kk_rules','kk_balances',
                   'kk_detail_items','kk_roommate','kk_extra_months','kk_work_jobs',
-                  'kk_alert_days','kk_submission'];
+                  'kk_alert_days','kk_submission','kk_sim_entries'];
 
 function sbInit() {
   const url = localStorage.getItem('kk_sb_url') || '';
@@ -1910,6 +1910,8 @@ async function _sbSave(key, val) {
   try { await _sb.from('kk_data').upsert({ key, value: val, updated_at: new Date().toISOString() }); }
   catch(e) { console.warn('Cloud save error:', e); }
 }
+// Reactコンポーネントからも呼べるようwindowに公開
+window._sbSave = _sbSave;
 
 async function sbPullAll(silent) {
   if (!_sb) { if (!silent) showToast('⚠️ クラウドが未設定です'); return; }
@@ -1940,6 +1942,8 @@ async function sbPullAll(silent) {
     renderMaster();
     initMonthSelectors();
     if (typeof renderJobProgress === 'function') renderJobProgress();
+    // シミュレーターをReactごと再マウントして最新データを反映
+    if (typeof window._reloadSim === 'function') window._reloadSim();
     if (!silent) showToast('✅ クラウドから同期しました（' + data.length + '件）');
   } catch(e) { if (!silent) showToast('❌ 同期エラー: ' + e.message); }
 }
@@ -4290,7 +4294,7 @@ document.querySelectorAll('.modal-overlay').forEach(o => {
 <!-- 💰 収支シミュレーター React App -->
 <script type="text/babel">
 (function() {
-const { useState } = React;
+const { useState, useEffect } = React;
 
 const INCOME_CATEGORIES  = ["給与", "ボーナス", "副業", "投資", "その他収入"];
 const EXPENSE_CATEGORIES = ["家賃・住宅ローン", "食費", "光熱費", "通信費", "保険料", "ローン返済", "サブスク", "医療費", "交通費", "その他支出"];
@@ -4397,9 +4401,17 @@ function SummaryCard({ label, actualAmt, plannedAmt, accentColor, dotColor }) {
 }
 
 function SimApp() {
-  const [entries, setEntries] = useState([]);
+  const [entries, setEntries] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('kk_sim_entries') || '[]'); } catch { return []; }
+  });
   const [form, setForm]       = useState(emptyForm("income"));
   const [showReset, setShowReset] = useState(false);
+
+  // entriesが変わるたびにlocalStorage＆Supabaseに保存
+  useEffect(() => {
+    localStorage.setItem('kk_sim_entries', JSON.stringify(entries));
+    if (window._sbSave) window._sbSave('kk_sim_entries', entries);
+  }, [entries]);
 
   const incomeEntries  = entries.filter(e => e.type === "income");
   const expenseEntries = entries.filter(e => e.type === "expense");
@@ -4581,9 +4593,16 @@ function SimApp() {
 }
 
 const simRootEl = document.getElementById("sim-root");
-if (simRootEl) {
-  ReactDOM.createRoot(simRootEl).render(<SimApp />);
+let _simReactRoot = null;
+function _mountSim() {
+  if (!simRootEl) return;
+  if (_simReactRoot) { _simReactRoot.unmount(); _simReactRoot = null; }
+  _simReactRoot = ReactDOM.createRoot(simRootEl);
+  _simReactRoot.render(<SimApp />);
 }
+_mountSim();
+window._reloadSim = _mountSim;
+window._sbSave = window._sbSave || function(){};
 })();
 </script>
 
