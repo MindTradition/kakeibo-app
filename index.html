@@ -6,7 +6,6 @@
 <title>家計・仕事管理アプリ</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --primary: #9B9DD3;
@@ -23,41 +22,6 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Hiragino Sans', 'Meiryo', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
-
-  /* フローティングクラウドボタン */
-  #float-cloud-btn {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    z-index: 9998;
-    background: linear-gradient(135deg, #9B9DD3, #7C7EB8);
-    color: #fff;
-    border-radius: 50px;
-    padding: 11px 20px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 4px 18px rgba(124,126,184,0.45);
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    transition: all 0.2s;
-    user-select: none;
-    border: none;
-    outline: none;
-  }
-  #float-cloud-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 22px rgba(124,126,184,0.55);
-    background: linear-gradient(135deg, #7C7EB8, #6060A0);
-  }
-  #float-cloud-btn:active { transform: translateY(0); }
-  #float-cloud-btn.saving  { background: linear-gradient(135deg, #F2A96B, #E8924A); }
-  #float-cloud-btn.saved   { background: linear-gradient(135deg, #6DB8D8, #4A9EC0); }
-  #float-cloud-btn.error   { background: linear-gradient(135deg, #E8694E, #C84830); }
-  @media (max-width: 768px) {
-    #float-cloud-btn { bottom: 16px; right: 16px; padding: 10px 16px; font-size: 12px; }
-  }
 
   /* サイドバー */
   #sidebar {
@@ -798,6 +762,100 @@ body.sidebar-open #mob-hamburger span:nth-child(3) { transform: translateY(-7.5p
   #jp-alert-banner { margin: -10px -10px 10px !important; }
 }
 
+/* ========== 給料日計算機 ========== */
+#page-payday .payday-result-box {
+  background: linear-gradient(135deg, #FF6B9D 0%, #845EC2 100%);
+  color: white;
+  padding: 28px 24px;
+  border-radius: 18px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 16px rgba(255,107,157,0.3);
+}
+#page-payday .payday-result-main { text-align: center; margin-bottom: 20px; }
+#page-payday .payday-result-label { font-size: 13px; opacity: 0.9; margin-bottom: 4px; }
+#page-payday .payday-result-value { font-size: 38px; font-weight: 800; letter-spacing: -1px; }
+#page-payday .payday-result-sub { font-size: 13px; opacity: 0.85; margin-top: 14px; text-align: center; }
+#page-payday .payday-kpi-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+}
+#page-payday .payday-kpi-item {
+  text-align: center; padding: 14px;
+  background: rgba(255,255,255,0.15); border-radius: 12px;
+}
+#page-payday .payday-kpi-label { font-size: 11px; opacity: 0.85; margin-bottom: 4px; }
+#page-payday .payday-kpi-value { font-size: 22px; font-weight: 800; }
+#page-payday .payday-input-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;
+}
+#page-payday .payday-card {
+  background: var(--card); border-radius: 18px; border: 1px solid var(--border);
+  padding: 20px; box-shadow: 0 2px 14px rgba(155,120,100,.07); margin-bottom: 16px;
+}
+#page-payday .payday-card h3 {
+  font-size: 13px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .5px; margin-bottom: 14px;
+}
+#page-payday .payday-input-row {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px;
+}
+#page-payday .payday-input-row-2 {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;
+}
+#page-payday input[type="number"].pd-inp,
+#page-payday input[type="date"].pd-inp,
+#page-payday input[type="text"].pd-inp {
+  width: 100%; padding: 9px 12px; border: 2px solid var(--border);
+  border-radius: 10px; font-size: 13px; box-sizing: border-box;
+  background: var(--card); color: var(--text);
+}
+#page-payday .btn-pd-income {
+  width:100%; padding:10px; background:#00D084; color:white;
+  border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer;
+}
+#page-payday .btn-pd-payment {
+  width:100%; padding:10px; background:#FF9671; color:white;
+  border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer;
+}
+#page-payday .pd-item-card {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:10px 12px; border-radius:10px; margin-top:8px; font-size:13px;
+}
+#page-payday .pd-item-card.income { background:#E5FFF5; }
+#page-payday .pd-item-card.payment { background:#FFF5E5; }
+#page-payday .pd-item-del {
+  padding:4px 10px; border:none; border-radius:6px; cursor:pointer;
+  font-size:11px; color:white;
+}
+#page-payday .pd-timeline {
+  background:var(--card); border-radius:18px; border:1px solid var(--border);
+  padding:20px; margin-bottom:16px; box-shadow:0 2px 14px rgba(155,120,100,.07);
+}
+#page-payday .pd-timeline h3 { font-size:13px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:14px; }
+#page-payday .pd-timeline-item {
+  display:flex; justify-content:space-between; padding:10px 12px;
+  border-left:4px solid #E0E0E0; border-radius:4px; margin-bottom:8px; font-size:13px;
+}
+#page-payday .pd-timeline-item.income { background:#E5FFF5; border-left-color:#00D084; }
+#page-payday .pd-timeline-item.payment { background:#FFF5E5; border-left-color:#FF9671; }
+#page-payday .pd-timeline-item.payday  { background:#FFE5EC; border-left-color:#FF6B9D; }
+#page-payday .pd-sync-banner {
+  background: linear-gradient(90deg,#667eea 0%,#764ba2 100%);
+  color:white; padding:12px 16px; border-radius:12px;
+  font-size:13px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between;
+}
+#page-payday .pd-sync-btn {
+  padding:6px 14px; background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4);
+  color:white; border-radius:8px; font-size:12px; cursor:pointer; font-weight:600;
+}
+#page-payday .pd-sync-btn:hover { background:rgba(255,255,255,0.3); }
+#page-payday .pd-negative { color:#ef4444 !important; }
+@media (max-width:768px) {
+  #page-payday .payday-input-grid { grid-template-columns:1fr; }
+  #page-payday .payday-kpi-grid { grid-template-columns:1fr 1fr; }
+  #page-payday .payday-input-row { grid-template-columns:1fr; }
+  #page-payday .payday-input-row-2 { grid-template-columns:1fr; }
+}
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.min.js"></script>
@@ -818,7 +876,6 @@ body.sidebar-open #mob-hamburger span:nth-child(3) { transform: translateY(-7.5p
 <!-- サイドバー -->
 <div id="sidebar">
   <div class="logo">💰 家計管理</div>
-  <div id="sb-sync-badge" style="display:none;margin:0 12px 8px;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:600;text-align:center;transition:all 0.3s;">☁️ 保存中...</div>
   <div class="month-display">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
       <div class="month-label">表示月</div>
@@ -838,6 +895,7 @@ body.sidebar-open #mob-hamburger span:nth-child(3) { transform: translateY(-7.5p
     <a data-page="roommate"><span class="icon">👤</span>同居人</a>
     <a data-page="submission"><span class="icon">📄</span>家計表</a>
     <a data-page="simulator" style="color:#6DB8D8; border-top:1px solid #334155; margin-top:4px;"><span class="icon">💰</span>収支シミュレーター</a>
+    <a data-page="payday" style="color:#FF6B9D;"><span class="icon">📅</span>給料日計算</a>
     <a data-page="work" style="color:#F2A96B;"><span class="icon">🎯</span>仕事進捗</a>
     <a data-page="master" style="border-top:1px solid #334155;margin-top:4px;color:#f87171;"><span class="icon">⚙️</span>マスター管理</a>
   </nav>
@@ -1787,28 +1845,6 @@ body.sidebar-open #mob-hamburger span:nth-child(3) { transform: translateY(-7.5p
     </div>
   </div>
 
-  <!-- ☁️ クラウド同期設定 -->
-  <div class="master-section" id="sb-section">
-    <div class="master-section-title">☁️ クラウド同期設定（Supabase）</div>
-    <div class="master-section-sub">設定するとスマホ・PCでデータを共有できます。<a href="https://supabase.com" target="_blank">Supabase</a>の無料アカウントが必要です。</div>
-    <div style="display:flex;flex-direction:column;gap:10px;max-width:600px;margin-top:12px;">
-      <div style="display:flex;gap:8px;align-items:center;">
-        <label style="min-width:120px;font-size:13px;font-weight:600;">Project URL</label>
-        <input id="sb-url" type="text" placeholder="https://xxxx.supabase.co" style="flex:1;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;" value="">
-      </div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <label style="min-width:120px;font-size:13px;font-weight:600;">Anon Key</label>
-        <input id="sb-key" type="password" placeholder="eyJhbGciOiJIUzI1NiIs..." style="flex:1;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;" value="">
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn btn-primary" onclick="sbSaveSettings()">💾 設定を保存</button>
-        <button class="btn btn-primary" onclick="sbPushAll()">⬆️ クラウドへアップロード</button>
-        <button class="btn btn-primary" onclick="sbPullAll()">⬇️ クラウドから同期</button>
-      </div>
-      <div id="sb-status" style="font-size:12px;color:var(--text-muted);"></div>
-    </div>
-  </div>
-
   <!-- データ概要 -->
   <div class="master-section">
     <div class="master-section-title">📊 現在のデータ概要</div>
@@ -1841,23 +1877,6 @@ body.sidebar-open #mob-hamburger span:nth-child(3) { transform: translateY(-7.5p
     <div id="master-type-list"></div>
   </div>
 
-  <!-- バックアップ・リストア -->
-  <hr class="master-divider">
-  <div class="master-section" style="border-color:#9B9DD3;background:linear-gradient(135deg,#f8f7ff,#f0f0ff);">
-    <div class="master-section-title" style="color:#4A4A8A;">💾 バックアップ・リストア</div>
-    <div class="master-section-sub">データをJSONファイルで保存・復元できます。アプリ更新前や大切なデータを保護したいときに定期的にバックアップしてください。</div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
-      <button class="btn btn-primary" onclick="exportBackup()" style="background:linear-gradient(135deg,#5B8DD8,#3B6DB0);">
-        ⬇️ バックアップをダウンロード
-      </button>
-      <label class="btn btn-outline" style="cursor:pointer;border-color:#9B9DD3;color:#4A4A8A;">
-        ⬆️ バックアップから復元
-        <input type="file" accept=".json" style="display:none;" onchange="importBackup(this)">
-      </label>
-    </div>
-    <div id="backup-status-info" style="font-size:12px;color:var(--text-muted);"></div>
-  </div>
-
   <!-- 全リセット -->
   <hr class="master-divider">
   <div class="master-section" style="border-color:#fecaca;background:#fff5f5;">
@@ -1867,6 +1886,87 @@ body.sidebar-open #mob-hamburger span:nth-child(3) { transform: translateY(-7.5p
   </div>
 
   <div id="master-log"></div>
+</div>
+
+<!-- ⑫ 給料日計算機 -->
+<div class="page" id="page-payday">
+  <div class="page-header">
+    <div>
+      <div class="page-title">📅 給料日計算</div>
+      <div class="page-subtitle">残金から給料日までの日割り・週割り予算を計算</div>
+    </div>
+  </div>
+
+  <!-- 連携バナー -->
+  <div class="pd-sync-banner" id="pd-sync-banner">
+    <span>🔗 支出明細の「予定」データと連携できます</span>
+    <button class="pd-sync-btn" onclick="pdSyncFromDetail()">📥 支払い予定を取込</button>
+  </div>
+
+  <!-- 結果表示ボックス -->
+  <div class="payday-result-box">
+    <div class="payday-result-main">
+      <div class="payday-result-label">利用可能残金</div>
+      <div class="payday-result-value" id="pd-available-balance">¥0</div>
+    </div>
+    <div class="payday-kpi-grid">
+      <div class="payday-kpi-item">
+        <div class="payday-kpi-label">週ごとの予算</div>
+        <div class="payday-kpi-value" id="pd-weekly-budget">¥0</div>
+      </div>
+      <div class="payday-kpi-item">
+        <div class="payday-kpi-label">日ごとの予算</div>
+        <div class="payday-kpi-value" id="pd-daily-budget">¥0</div>
+      </div>
+    </div>
+    <div class="payday-result-sub">
+      次の給料日: <strong id="pd-payday-display">—</strong>
+      （あと <span id="pd-days-until">—</span> 日）
+    </div>
+  </div>
+
+  <!-- 入力エリア（残金・給料日） -->
+  <div class="payday-input-grid">
+    <div class="payday-card">
+      <h3>現在残金</h3>
+      <input type="number" id="pd-balance" class="pd-inp" value="50000" placeholder="現在の残金（円）" oninput="pdUpdate()">
+    </div>
+    <div class="payday-card">
+      <h3>給料日</h3>
+      <input type="date" id="pd-payday" class="pd-inp" onchange="pdUpdate()">
+      <div style="font-size:12px;color:var(--text-muted);margin-top:8px;" id="pd-payday-default"></div>
+    </div>
+  </div>
+
+  <!-- キャッシュフロー タイムライン -->
+  <div class="pd-timeline" id="pd-timeline-box" style="display:none;">
+    <h3>キャッシュフロー</h3>
+    <div id="pd-timeline-list"></div>
+  </div>
+
+  <!-- 見込み入金 -->
+  <div class="payday-card">
+    <h3>見込み入金</h3>
+    <div class="payday-input-row">
+      <input type="number" id="pd-income-amount" class="pd-inp" placeholder="金額（円）">
+      <input type="date" id="pd-income-date" class="pd-inp">
+      <input type="text" id="pd-income-memo" class="pd-inp" placeholder="メモ（副業など）">
+    </div>
+    <button class="btn-pd-income" onclick="pdAddIncome()">＋ 追加</button>
+    <div id="pd-income-list"></div>
+  </div>
+
+  <!-- 支払い予定 -->
+  <div class="payday-card">
+    <h3>支払い予定</h3>
+    <div class="payday-input-row-2">
+      <input type="number" id="pd-payment-amount" class="pd-inp" placeholder="金額（円）">
+      <input type="date" id="pd-payment-date" class="pd-inp">
+    </div>
+    <input type="text" id="pd-payment-memo" class="pd-inp" placeholder="メモ（家賃・光熱費など）" style="margin-bottom:12px;">
+    <button class="btn-pd-payment" onclick="pdAddPayment()">＋ 追加</button>
+    <div id="pd-payment-list"></div>
+  </div>
 </div>
 
 <!-- モーダル：CSV取込確認 -->
@@ -1935,167 +2035,71 @@ const BANKS = {
 // 初期残高
 const INITIAL_BALANCE = { '三井住友': 114, 'みずほ': 205, 'ひろぎん': 40028, '現金': 25766 };
 
+// ========== 給料日ベース 期間計算ユーティリティ ==========
+const APP_HOLIDAYS = new Set([
+  '2025-01-01','2025-01-13','2025-02-11','2025-02-23','2025-02-24',
+  '2025-03-20','2025-04-29','2025-05-03','2025-05-04','2025-05-05',
+  '2025-05-06','2025-07-21','2025-08-11','2025-09-15','2025-09-23',
+  '2025-10-13','2025-11-03','2025-11-23','2025-11-24',
+  '2026-01-01','2026-01-12','2026-02-11','2026-03-20',
+  '2026-04-29','2026-05-03','2026-05-04','2026-05-05',
+  '2026-07-20','2026-08-10','2026-09-21','2026-09-22',
+  '2026-10-12','2026-11-03','2026-11-23',
+  '2027-01-01','2027-01-11','2027-02-11','2027-03-21',
+  '2027-04-29','2027-05-03','2027-05-04','2027-05-05',
+  '2027-07-19','2027-08-11','2027-09-20','2027-09-23',
+  '2027-10-11','2027-11-03','2027-11-23',
+]);
+
+function appToDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function appIsBusinessDay(d) {
+  const dow = d.getDay();
+  if (dow === 0 || dow === 6) return false;
+  return !APP_HOLIDAYS.has(appToDateStr(d));
+}
+
+// year:年 month:月(1-12) → その月の給料日(27日 or 前営業日)を Date で返す
+function getPaydayDate(year, month) {
+  const d = new Date(year, month - 1, 27);
+  while (!appIsBusinessDay(d)) d.setDate(d.getDate() - 1);
+  return d;
+}
+
+// "YYYY-MM" → { start:"YYYY-MM-DD", end:"YYYY-MM-DD", label:"X月（M/D〜M/D）" }
+// 「X月」= 前月の給料日〜今月の給料日の前日
+function getPaydayRange(ym) {
+  if (!ym) return null;
+  const [y, m] = ym.split('-').map(Number);
+  // 前月の給料日 → 期間開始
+  const prevY = m === 1 ? y - 1 : y;
+  const prevM = m === 1 ? 12 : m - 1;
+  const startD = getPaydayDate(prevY, prevM);
+  // 今月の給料日の前日 → 期間終了
+  const paydayD = getPaydayDate(y, m);
+  const endD = new Date(paydayD);
+  endD.setDate(endD.getDate() - 1);
+  const toLabel = d => `${d.getMonth()+1}/${d.getDate()}`;
+  return {
+    start: appToDateStr(startD),
+    end:   appToDateStr(endD),
+    label: `${y}年${m}月（${toLabel(startD)}〜${toLabel(endD)}）`,
+  };
+}
+
+// date文字列 "YYYY-MM-DD" が range の期間内かどうか
+function inPaydayRange(dateStr, range) {
+  if (!range) return true;
+  return dateStr >= range.start && dateStr <= range.end;
+}
+
 // ========== ストレージ ==========
 function load(key, def) {
   try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; } catch { return def; }
 }
-function save(key, val) {
-  localStorage.setItem(key, JSON.stringify(val));
-  _sbSave(key, val);
-}
-
-// ========== Supabase クラウド同期 ==========
-let _sb = null;
-const _SB_KEYS = ['kk_transactions','kk_expenses','kk_jobs','kk_rules','kk_balances',
-                  'kk_detail_items','kk_roommate','kk_extra_months','kk_work_jobs',
-                  'kk_alert_days','kk_submission','kk_sim_entries'];
-
-function sbInit() {
-  const url = localStorage.getItem('kk_sb_url') || '';
-  const key = localStorage.getItem('kk_sb_key') || '';
-  if (url && key && typeof supabase !== 'undefined') {
-    try { _sb = supabase.createClient(url, key); } catch(e) { _sb = null; }
-  }
-}
-
-let _sbSaveTimer = null;
-
-// フローティングボタンの状態を更新するヘルパー
-function _setCloudBtn(state, text) {
-  const btn = document.getElementById('float-cloud-btn');
-  const icon = document.getElementById('float-cloud-icon');
-  const label = document.getElementById('float-cloud-text');
-  if (!btn) return;
-  btn.className = state; // saving / saved / error / '' (default)
-  if (icon) icon.textContent = state === 'saving' ? '🔄' : state === 'saved' ? '✅' : state === 'error' ? '⚠️' : '☁️';
-  if (label) label.textContent = text;
-}
-
-async function _sbSave(key, val) {
-  if (!_sb) return;
-  // サイドバーバッジを表示
-  const badge = document.getElementById('sb-sync-badge');
-  if (badge) {
-    badge.style.display = 'block';
-    badge.style.background = 'rgba(255,200,50,0.15)';
-    badge.style.color = '#F2A96B';
-    badge.textContent = '☁️ 保存中...';
-  }
-  // フローティングボタンを「保存中」状態に
-  _setCloudBtn('saving', '保存中...');
-  try {
-    await _sb.from('kk_data').upsert({ key, value: val, updated_at: new Date().toISOString() });
-    // 保存完了
-    if (badge) {
-      badge.style.background = 'rgba(109,184,216,0.15)';
-      badge.style.color = '#6DB8D8';
-      badge.textContent = '☁️ 保存済み';
-    }
-    _setCloudBtn('saved', '保存済み ✓');
-  } catch(e) {
-    console.warn('Cloud save error:', e);
-    if (badge) {
-      badge.style.background = 'rgba(232,105,78,0.15)';
-      badge.style.color = '#E8694E';
-      badge.textContent = '⚠️ 保存失敗';
-    }
-    _setCloudBtn('error', '保存失敗');
-  }
-  // 3秒後にデフォルトに戻す
-  if (_sbSaveTimer) clearTimeout(_sbSaveTimer);
-  _sbSaveTimer = setTimeout(() => {
-    if (badge) badge.style.display = 'none';
-    _setCloudBtn('', 'クラウドへ保存');
-  }, 3000);
-}
-// Reactコンポーネントからも呼べるようwindowに公開
-window._sbSave = _sbSave;
-
-async function sbPullAll(silent) {
-  if (!_sb) { if (!silent) showToast('⚠️ クラウドが未設定です'); return; }
-  try {
-    if (!silent) showToast('⬇️ クラウドから同期中...');
-    const { data, error } = await _sb.from('kk_data').select('*');
-    if (error) throw error;
-    if (!data || data.length === 0) { if (!silent) showToast('クラウドにデータがありません'); return; }
-    // localStorageに全データを書き込む
-    data.forEach(row => { localStorage.setItem(row.key, JSON.stringify(row.value)); });
-    // 全変数を再読み込み
-    transactions  = load('kk_transactions', []);
-    expenses      = load('kk_expenses', []);
-    jobs          = load('kk_jobs', []);
-    rules         = load('kk_rules', []);
-    balances      = load('kk_balances', { ...INITIAL_BALANCE });
-    detailItems   = load('kk_detail_items', {});
-    roommateData  = load('kk_roommate') || {};
-    extraMonths   = load('kk_extra_months') || [];
-    // 仕事進捗変数を再読み込み
-    jpJobs      = JSON.parse(localStorage.getItem('kk_work_jobs') || '[]');
-    jpAlertDays = parseInt(localStorage.getItem('kk_alert_days') || '7');
-    // 全画面を再描画（ページ切り替えは行わず、現在のページを維持）
-    const currentPage = localStorage.getItem('kk_current_page') || 'dashboard';
-    renderDashboard();
-    renderTransactions();
-    renderDetail();
-    renderRoommate();
-    renderMaster();
-    initMonthSelectors();
-    if (typeof renderJobProgress === 'function') renderJobProgress();
-    if (typeof renderExpenses === 'function') renderExpenses();
-    // シミュレーターをReactごと再マウントして最新データを反映
-    if (typeof window._reloadSim === 'function') window._reloadSim();
-    // 現在のページを維持（クラウド同期でページが変わらないよう再アクティブ化）
-    try {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('#sidebar nav a').forEach(a => a.classList.remove('active'));
-      document.getElementById('page-' + currentPage)?.classList.add('active');
-      document.querySelector(`[data-page="${currentPage}"]`)?.classList.add('active');
-    } catch(e) {}
-    if (!silent) showToast('✅ クラウドから同期しました（' + data.length + '件）');
-  } catch(e) { if (!silent) showToast('❌ 同期エラー: ' + e.message); }
-}
-
-// ページ読み込み時に自動同期
-window.addEventListener('DOMContentLoaded', () => {
-  if (_sb) {
-    showToast('☁️ クラウドと自動同期中...');
-    sbPullAll(true).then(() => showToast('✅ 自動同期完了'));
-  }
-});
-
-async function sbPushAll() {
-  if (!_sb) { showToast('⚠️ クラウドが未設定です（マスター管理でURLとキーを設定）'); return; }
-  _setCloudBtn('saving', 'アップロード中...');
-  try {
-    showToast('⬆️ クラウドへアップロード中...');
-    for (const k of _SB_KEYS) {
-      const v = localStorage.getItem(k);
-      if (v) {
-        await _sb.from('kk_data').upsert({ key: k, value: JSON.parse(v), updated_at: new Date().toISOString() });
-      }
-    }
-    _setCloudBtn('saved', '完了 ✓');
-    showToast('✅ クラウドへアップロード完了（' + _SB_KEYS.length + '件）');
-    if (_sbSaveTimer) clearTimeout(_sbSaveTimer);
-    _sbSaveTimer = setTimeout(() => { _setCloudBtn('', 'クラウドへ保存'); }, 3000);
-  } catch(e) {
-    _setCloudBtn('error', '失敗');
-    showToast('❌ アップロードエラー: ' + e.message);
-    setTimeout(() => { _setCloudBtn('', 'クラウドへ保存'); }, 3000);
-  }
-}
-
-function sbSaveSettings() {
-  const url = (document.getElementById('sb-url')?.value || '').trim();
-  const key = (document.getElementById('sb-key')?.value || '').trim();
-  localStorage.setItem('kk_sb_url', url);
-  localStorage.setItem('kk_sb_key', key);
-  sbInit();
-  showToast(url && key ? '✅ クラウド設定を保存しました' : 'クラウド設定をクリアしました');
-  renderMaster();
-}
-
-sbInit();
+function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
 
 let transactions  = load('kk_transactions', []);
 let expenses      = load('kk_expenses', []);
@@ -2381,17 +2385,11 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 
 // ========== ナビゲーション ==========
-const VALID_PAGES = ['dashboard','transactions','import','expenses','work','report','detail','roommate','submission','simulator','master'];
-
 function navigate(page) {
-  if (!VALID_PAGES.includes(page)) page = 'dashboard';
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('#sidebar nav a').forEach(a => a.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
-  const navItem = document.querySelector(`[data-page="${page}"]`);
-  if (navItem) navItem.classList.add('active');
-  // 現在のページをlocalStorageに記憶
-  localStorage.setItem('kk_current_page', page);
+  document.querySelector(`[data-page="${page}"]`).classList.add('active');
   renderPage(page);
 }
 
@@ -2399,29 +2397,23 @@ document.querySelectorAll('#sidebar nav a').forEach(a => {
   a.addEventListener('click', () => navigate(a.dataset.page));
 });
 
-// 起動時に最後に表示していたページを復元
-(function restoreLastPage() {
-  const last = localStorage.getItem('kk_current_page');
-  if (!last || !VALID_PAGES.includes(last) || last === 'dashboard') return;
-  function doRestore() {
-    setTimeout(() => {
-      try { navigate(last); } catch(e) {}
-    }, 100); // クラウド自動同期より後に復元されるよう少し遅らせる
-  }
-  if (document.readyState === 'loading') {
-    window.addEventListener('DOMContentLoaded', doRestore);
-  } else {
-    doRestore(); // すでにDOM読み込み完了済みの場合
-  }
-})();
-
 function renderPage(page) {
   if (page === 'dashboard')    renderDashboard();
-  if (page === 'transactions') renderTransactions();
+  if (page === 'transactions') {
+    // 取引一覧に遷移するとき txMonth が未選択ならサイドバーの月に自動同期する
+    const txMonthEl = document.getElementById('txMonth');
+    const sbMonth   = document.getElementById('sidebarMonth')?.value;
+    if (txMonthEl && !txMonthEl.value && sbMonth) {
+      const opt = txMonthEl.querySelector(`option[value="${sbMonth}"]`);
+      if (opt) txMonthEl.value = sbMonth;
+    }
+    renderTransactions();
+  }
   if (page === 'import')       renderRules();
   if (page === 'expenses')     renderExpenses();
   if (page === 'work')         renderWork();
   if (page === 'simulator')    {} // React マウント済み
+  if (page === 'payday')       pdRender();
   if (page === 'report')       renderReport();
   if (page === 'detail')       renderDetail();
   if (page === 'roommate')     renderRoommate();
@@ -2439,7 +2431,8 @@ function getSelectedMonth() {
 function showKpiDetail(type) {
   const month = getSelectedMonth();
   const TRANSFER_CATS = new Set(['引き出し','現金引出し','PayPay','同居人へ']);
-  const txs = transactions.filter(t => t.date.startsWith(month));
+  const _range = getPaydayRange(month);
+  const txs = transactions.filter(t => inPaydayRange(t.date, _range));
   const isIncome = type === 'income';
 
   const targets = isIncome
@@ -2491,9 +2484,10 @@ function showKpiDetail(type) {
 
 function renderDashboard() {
   const month = getSelectedMonth();
-  document.getElementById('dash-period').textContent = month.replace('-','年') + '月';
+  const _range = getPaydayRange(month);
+  document.getElementById('dash-period').textContent = _range ? _range.label : month.replace('-','年') + '月';
 
-  const txs = transactions.filter(t => t.date.startsWith(month));
+  const txs = transactions.filter(t => inPaydayRange(t.date, _range));
 
   // 振替扱いカテゴリ（ATM引き出し等）は収入・支出の両方から除外して二重計上を防ぐ
   const TRANSFER_CATS = new Set(['引き出し','現金引出し','PayPay','同居人へ']);
@@ -2610,7 +2604,8 @@ function changeMonth(val) {
     const opt = el.querySelector(`option[value="${val}"]`);
     if (opt && el.value !== val) el.value = val;
   });
-  const label = val.replace('-','年') + '月';
+  const _pr = getPaydayRange(val);
+  const label = _pr ? _pr.label : val.replace('-','年') + '月';
   document.getElementById('dash-period').textContent = label;
   renderDashboard();
   renderTransactions();
@@ -2710,6 +2705,13 @@ function filterByBank(val) {
     const activeBtn = document.getElementById(activeId);
     if (activeBtn) activeBtn.classList.add('active');
   }
+  // 銀行フィルタ切替時、txMonth が未選択ならサイドバーの月に自動同期する
+  const txMonthEl = document.getElementById('txMonth');
+  const sbMonth   = document.getElementById('sidebarMonth')?.value;
+  if (txMonthEl && !txMonthEl.value && sbMonth) {
+    const opt = txMonthEl.querySelector(`option[value="${sbMonth}"]`);
+    if (opt) txMonthEl.value = sbMonth;
+  }
   txPage = 0;
   renderTransactions();
 }
@@ -2733,7 +2735,7 @@ function renderTransactions() {
     if (cat  && t.category !== cat) return false;
     if (type === 'in'  && t.in === 0)  return false;
     if (type === 'out' && t.out === 0) return false;
-    if (month && !t.date.startsWith(month)) return false;
+    if (month) { const _r = getPaydayRange(month); if (_r && !inPaydayRange(t.date, _r)) return false; }
     return true;
   }).sort((a,b) => b.date.localeCompare(a.date));
 
@@ -3122,7 +3124,8 @@ function renderExpenses() {
   const type  = document.getElementById('expType').value;
 
   // KPIカード：月フィルターのみ（種別フィルターは無視して全種別の合計を表示）
-  const byMonth = expenses.filter(e => !month || e.date.startsWith(month));
+  const _expRange = month ? getPaydayRange(month) : null;
+  const byMonth = expenses.filter(e => !month || inPaydayRange(e.date, _expRange));
   const fixedTotal    = byMonth.filter(e=>e.type==='固定費'   ).reduce((s,e)=>s+e.amount,0);
   const outsourceTotal= byMonth.filter(e=>e.type==='外注費'   ).reduce((s,e)=>s+e.amount,0);
   const purchaseTotal = byMonth.filter(e=>e.type==='購入経費' ).reduce((s,e)=>s+e.amount,0);
@@ -3269,11 +3272,13 @@ let _detOpenState = new Set(); // 空Set = デフォルト全閉じ
 
 function renderDetail() {
   const month = document.getElementById('detMonth')?.value || getSelectedMonth();
-  document.getElementById('det-period').textContent = `（${month.replace('-','年')}月分）`;
+  const _detRange = getPaydayRange(month);
+  const _detLabel = _detRange ? `（${_detRange.label}）` : `（${month.replace('-','年')}月分）`;
+  document.getElementById('det-period').textContent = _detLabel;
 
-  const txsOut    = transactions.filter(t => t.date.startsWith(month) && t.out > 0);
-  const txsIn     = transactions.filter(t => t.date.startsWith(month) && t.in  > 0);
-  const exps      = expenses.filter(e => e.date.startsWith(month));
+  const txsOut    = transactions.filter(t => inPaydayRange(t.date, _detRange) && t.out > 0);
+  const txsIn     = transactions.filter(t => inPaydayRange(t.date, _detRange) && t.in  > 0);
+  const exps      = expenses.filter(e => inPaydayRange(e.date, _detRange));
   const manMonth  = detailItems[month] || {};
 
   let incomeTotal = 0;   // 収入合計
@@ -3574,28 +3579,6 @@ function renderReport() {
 
 // ========== マスター管理ページ ==========
 function renderMaster() {
-  // --- クラウド設定の値を復元 ---
-  const sbUrlEl = document.getElementById('sb-url');
-  const sbKeyEl = document.getElementById('sb-key');
-  if (sbUrlEl) sbUrlEl.value = localStorage.getItem('kk_sb_url') || '';
-  if (sbKeyEl) sbKeyEl.value = localStorage.getItem('kk_sb_key') || '';
-  const sbStatusEl = document.getElementById('sb-status');
-  if (sbStatusEl) sbStatusEl.textContent = _sb ? '🟢 クラウド接続済み' : '⚪ クラウド未設定';
-
-  // --- バックアップ最終日時の表示 ---
-  const backupInfoEl = document.getElementById('backup-status-info');
-  if (backupInfoEl) {
-    const lastBackup = localStorage.getItem('kk_last_backup');
-    const txCount = transactions.length;
-    const wjCount = (JSON.parse(localStorage.getItem('kk_work_jobs') || '[]')).length;
-    if (lastBackup) {
-      const d = new Date(lastBackup).toLocaleString('ja-JP');
-      backupInfoEl.innerHTML = `<span style="color:#4A8A5A">✅ 最終バックアップ: ${d}</span>　<span style="color:var(--text-muted)">（取引 ${txCount}件 ／ 仕事案件 ${wjCount}件）</span>`;
-    } else {
-      backupInfoEl.innerHTML = `<span style="color:#E87040">⚠️ まだバックアップが作成されていません。定期的にダウンロードしてデータを保護しましょう。</span>　<span style="color:var(--text-muted)">（取引 ${txCount}件 ／ 仕事案件 ${wjCount}件）</span>`;
-    }
-  }
-
   // --- データ概要 ---
   const months = [...new Set(transactions.map(t => t.date.slice(0,7)))].sort();
   const banks  = [...new Set(transactions.map(t => t.bank))].sort();
@@ -3686,102 +3669,6 @@ function deleteAllJobs()     { if (!confirmDel('仕事進捗',   jobs.length))  
 function deleteAllRules()    { if (!confirmDel('分類ルール', rules.length))        return; rules = [];        save('kk_rules', rules);           masterLog('✅ 分類ルールを全削除しました'); renderMaster(); }
 function deleteAllDetail()   { detailItems = {};   save('kk_detail_items', detailItems);   masterLog('✅ 支出明細データを全削除しました'); renderMaster(); }
 function deleteAllRoommate() { roommateData = {};  save('kk_roommate', roommateData);       masterLog('✅ 同居人データを全削除しました'); renderMaster(); }
-
-// ========== バックアップ・リストア ==========
-const _BACKUP_KEYS = [
-  'kk_transactions','kk_expenses','kk_jobs','kk_rules','kk_balances',
-  'kk_detail_items','kk_roommate','kk_extra_months','kk_work_jobs',
-  'kk_alert_days','kk_submission','kk_sim_entries'
-];
-
-function exportBackup() {
-  const data = { _backup_date: new Date().toISOString(), _app_version: '1.0' };
-  _BACKUP_KEYS.forEach(k => {
-    const v = localStorage.getItem(k);
-    if (v) { try { data[k] = JSON.parse(v); } catch { data[k] = v; } }
-  });
-
-  const json = JSON.stringify(data, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-  a.href     = url;
-  a.download = `kakeibo_backup_${dateStr}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-
-  // 最終バックアップ日時を記録
-  localStorage.setItem('kk_last_backup', new Date().toISOString());
-
-  const cnt = (data.kk_transactions || []).length;
-  showToast(`✅ バックアップをダウンロードしました（取引 ${cnt}件）`);
-  renderMaster(); // バックアップ日時表示を更新
-}
-
-function importBackup(input) {
-  const file = input.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    try {
-      const data = JSON.parse(e.target.result);
-
-      // 最低限のキーが存在するか確認
-      const hasData = _BACKUP_KEYS.some(k => data[k] !== undefined);
-      if (!hasData) {
-        showToast('❌ 無効なバックアップファイルです');
-        input.value = '';
-        return;
-      }
-
-      const backupDate = data._backup_date
-        ? new Date(data._backup_date).toLocaleString('ja-JP')
-        : '日時不明';
-      const txCount = (data.kk_transactions || []).length;
-
-      if (!confirm(`バックアップ（${backupDate}）を復元しますか？\n取引 ${txCount}件が含まれています。\n\n⚠️ 現在のデータはすべて上書きされます。`)) {
-        input.value = '';
-        return;
-      }
-
-      // localStorageに書き戻す
-      _BACKUP_KEYS.forEach(k => {
-        if (data[k] !== undefined) {
-          localStorage.setItem(k, JSON.stringify(data[k]));
-        }
-      });
-
-      // 全変数を再読み込み
-      transactions = load('kk_transactions', []);
-      expenses     = load('kk_expenses', []);
-      jobs         = load('kk_jobs', []);
-      rules        = load('kk_rules', []);
-      balances     = load('kk_balances', { ...INITIAL_BALANCE });
-      detailItems  = load('kk_detail_items', {});
-      roommateData = load('kk_roommate') || {};
-      extraMonths  = load('kk_extra_months') || [];
-      jpJobs       = JSON.parse(localStorage.getItem('kk_work_jobs') || '[]');
-      jpAlertDays  = parseInt(localStorage.getItem('kk_alert_days') || '7');
-
-      // 全画面を再描画
-      renderDashboard(); renderTransactions(); renderDetail();
-      renderRoommate(); renderMaster(); initMonthSelectors();
-      if (typeof renderJobProgress === 'function') renderJobProgress();
-      if (typeof renderExpenses    === 'function') renderExpenses();
-      if (typeof window._reloadSim === 'function') window._reloadSim();
-
-      showToast(`✅ 復元完了！取引 ${transactions.length}件を読み込みました`);
-    } catch(err) {
-      showToast('❌ 復元エラー: ' + err.message);
-    }
-    input.value = '';
-  };
-  reader.readAsText(file);
-}
 
 function resetAllData() {
   if (!confirm('⚠️ すべてのデータを削除します。この操作は元に戻せません。\n本当に実行しますか？')) return;
@@ -3882,7 +3769,8 @@ function autoFillRoommate() {
 }
 
 function renderRoommateTransfers(month) {
-  const txs = transactions.filter(t => t.date.startsWith(month) && t.category === '同居人へ');
+  const _rmRange = getPaydayRange(month);
+  const txs = transactions.filter(t => inPaydayRange(t.date, _rmRange) && t.category === '同居人へ');
   const el  = document.getElementById('rm-transfer-list');
   if (!el) return;
   if (txs.length === 0) { el.innerHTML = '<span style="color:var(--text-muted);">この月の「同居人へ」取引なし</span>'; return; }
@@ -3917,7 +3805,13 @@ function initMonthSelectors() {
 
   ['txMonth','expMonth'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.innerHTML = `<option value="">すべての月</option>` + months.map(m=>`<option value="${m}">${m.replace('-','年')}月</option>`).join('');
+    if (!el) return;
+    const prevVal = el.value; // 既存の選択を保持
+    el.innerHTML = `<option value="">すべての月</option>` + months.map(m=>`<option value="${m}">${m.replace('-','年')}月</option>`).join('');
+    // 再ビルド後、以前の選択月 or 現在月を復元する
+    const restoreVal = prevVal || current;
+    const opt = el.querySelector(`option[value="${restoreVal}"]`);
+    if (opt) el.value = restoreVal;
   });
 
   // 支出明細・弁護士提出用・同居人の月セレクタ（すべての月）
@@ -4044,7 +3938,8 @@ function loadSubmissionData() {
 
 function autoFillSubmission() {
   const month = document.getElementById('subMonth')?.value || '2026-02';
-  const txs = transactions.filter(t => t.date.startsWith(month));
+  const _subRange = getPaydayRange(month);
+  const txs = transactions.filter(t => inPaydayRange(t.date, _subRange));
 
   const catSum = (cat) => txs.filter(t => t.category === cat).reduce((s,t) => s+t.out, 0);
   const catSumIn = (cat) => txs.filter(t => t.category === cat).reduce((s,t) => s+t.in, 0);
@@ -4299,8 +4194,11 @@ function downloadSubmissionJSON() {
 function renderSubmission() {
   const month = document.getElementById('subMonth')?.value || '2026-02';
   const [y, m] = month.split('-');
-  document.getElementById('sub-period-disp').textContent =
-    `（${y}年 ${parseInt(m)}月分）　（${parseInt(m)-1}月27日〜${parseInt(m)}月26日）`;
+  const _subPeriod = getPaydayRange(month);
+  const _subPeriodLabel = _subPeriod
+    ? `（${y}年 ${parseInt(m)}月分）　（${_subPeriod.label.match(/（(.+)）/)?.[1] || ''}）`
+    : `（${y}年 ${parseInt(m)}月分）`;
+  document.getElementById('sub-period-disp').textContent = _subPeriodLabel;
   loadSubmissionData();
   calcSubmission();
 }
@@ -4543,7 +4441,7 @@ document.querySelectorAll('.modal-overlay').forEach(o => {
 <!-- 💰 収支シミュレーター React App -->
 <script type="text/babel">
 (function() {
-const { useState, useEffect } = React;
+const { useState } = React;
 
 const INCOME_CATEGORIES  = ["給与", "ボーナス", "副業", "投資", "その他収入"];
 const EXPENSE_CATEGORIES = ["家賃・住宅ローン", "食費", "光熱費", "通信費", "保険料", "ローン返済", "サブスク", "医療費", "交通費", "その他支出"];
@@ -4572,31 +4470,6 @@ function todayStr() {
 
 let simIdCounter = 1;
 function newSimId() { return simIdCounter++; }
-function simSyncCounter(entries) {
-  const maxId = entries.reduce((m, e) => Math.max(m, Number(e.id) || 0), 0);
-  if (maxId >= simIdCounter) simIdCounter = maxId + 1;
-}
-// 重複IDを修正する（既存データに収入・支出で同じIDが存在する場合の対策）
-function fixDuplicateIds(entries) {
-  const seenIds = new Set();
-  let hasFixed = false;
-  const result = entries.map(e => {
-    const id = Number(e.id);
-    if (!id || seenIds.has(id)) {
-      const newId = newSimId(); // simSyncCounter後なので安全なIDが取得できる
-      seenIds.add(newId);
-      hasFixed = true;
-      return { ...e, id: newId };
-    }
-    seenIds.add(id);
-    return e;
-  });
-  // 修正があった場合はlocalStorageを即時更新
-  if (hasFixed) {
-    try { localStorage.setItem('kk_sim_entries', JSON.stringify(result)); } catch {}
-  }
-  return result;
-}
 
 function emptyForm(type) {
   return { type, name: "", category: type === "income" ? "給与" : "家賃・住宅ローン", amount: "", freq: "once", startDate: todayStr(), endDate: "", done: false };
@@ -4638,12 +4511,7 @@ function EntryRow({ entry, onRemove, onToggle }) {
         <Dot color={accent} />
         <span style={{ fontWeight: 700, fontSize: 14, color: entry.done ? C.ink : C.muted }}>{entry.name || "（名称なし）"}</span>
         <span style={{ fontSize: 11, color: C.muted, background: C.cream, borderRadius: 6, padding: "1px 7px" }}>{entry.category}</span>
-        <button onClick={() => {
-            const label = entry.name || "（名称なし）";
-            const kind  = isIncome ? "収入" : "支出";
-            if (window.confirm(`${kind}「${label}」を削除しますか？`)) onRemove();
-          }}
-          style={{ marginLeft: "auto", background: "none", border: "none", color: "#ccc", fontSize: 18, cursor: "pointer", lineHeight: 1, padding: "0 2px" }}
+        <button onClick={onRemove} style={{ marginLeft: "auto", background: "none", border: "none", color: "#ccc", fontSize: 18, cursor: "pointer", lineHeight: 1, padding: "0 2px" }}
           onMouseEnter={e => e.currentTarget.style.color = C.red}
           onMouseLeave={e => e.currentTarget.style.color = "#ccc"}>×</button>
       </div>
@@ -4680,21 +4548,9 @@ function SummaryCard({ label, actualAmt, plannedAmt, accentColor, dotColor }) {
 }
 
 function SimApp() {
-  const [entries, setEntries] = useState(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem('kk_sim_entries') || '[]');
-      simSyncCounter(saved);       // ① 既存IDより大きい値からカウンター開始
-      return fixDuplicateIds(saved); // ② 重複IDを修正（収入と支出で同じIDがあるバグ対策）
-    } catch { return []; }
-  });
+  const [entries, setEntries] = useState([]);
   const [form, setForm]       = useState(emptyForm("income"));
   const [showReset, setShowReset] = useState(false);
-
-  // entriesが変わるたびにlocalStorage＆Supabaseに保存
-  useEffect(() => {
-    localStorage.setItem('kk_sim_entries', JSON.stringify(entries));
-    if (window._sbSave) window._sbSave('kk_sim_entries', entries);
-  }, [entries]);
 
   const incomeEntries  = entries.filter(e => e.type === "income");
   const expenseEntries = entries.filter(e => e.type === "expense");
@@ -4876,22 +4732,9 @@ function SimApp() {
 }
 
 const simRootEl = document.getElementById("sim-root");
-let _simReactRoot = null;
-function _mountSim() {
-  if (!simRootEl) return;
-  // 再マウント前にIDカウンターを同期し、重複IDも修正
-  try {
-    const saved = JSON.parse(localStorage.getItem('kk_sim_entries') || '[]');
-    simSyncCounter(saved);
-    fixDuplicateIds(saved); // 重複があれば自動修正＆localStorage更新
-  } catch {}
-  if (_simReactRoot) { _simReactRoot.unmount(); _simReactRoot = null; }
-  _simReactRoot = ReactDOM.createRoot(simRootEl);
-  _simReactRoot.render(<SimApp />);
+if (simRootEl) {
+  ReactDOM.createRoot(simRootEl).render(<SimApp />);
 }
-_mountSim();
-window._reloadSim = _mountSim;
-window._sbSave = window._sbSave || function(){};
 })();
 </script>
 
@@ -4944,8 +4787,8 @@ function jpRenderDashboard() {
 
   document.getElementById('dash-kpi-count').textContent         = jpJobs.length + '件';
   document.getElementById('dash-kpi-active').textContent        = '進行中 ' + active.length + '件';
-  document.getElementById('dash-kpi-confirmed').textContent     = totalConf ? '¥'+totalConf.toLocaleString() : '¥0';
-  document.getElementById('dash-kpi-confirmed-sub').textContent = '今月受注 ' + (tmConf ? '¥'+tmConf.toLocaleString() : '¥0');
+  document.getElementById('dash-kpi-jpConfirmed').textContent     = totalConf ? '¥'+totalConf.toLocaleString() : '¥0';
+  document.getElementById('dash-kpi-jpConfirmed-sub').textContent = '今月受注 ' + (tmConf ? '¥'+tmConf.toLocaleString() : '¥0');
   document.getElementById('dash-kpi-paid').textContent          = totalPaid ? '¥'+totalPaid.toLocaleString() : '¥0';
   document.getElementById('dash-kpi-unpaid').textContent        = totalUnpd ? '¥'+totalUnpd.toLocaleString() : '¥0';
 
@@ -5064,10 +4907,7 @@ function jpSwitchTab(tab) {
   jpRenderTable();
 }
 
-function jpSave() {
-  localStorage.setItem('kk_work_jobs', JSON.stringify(jpJobs));
-  _sbSave('kk_work_jobs', jpJobs);
-}
+function jpSave() { localStorage.setItem('kk_work_jobs', JSON.stringify(jpJobs)); }
 function jpFmt(n)  { return n ? '¥' + Math.abs(n).toLocaleString() : '—'; }
 
 // ===== FEE CALC =====
@@ -5226,12 +5066,12 @@ function jpCalcModalTotal() {
       `¥${afterFee.toLocaleString()} （手数料 ¥${Math.ceil(gross * JP_COCONALA_FEE).toLocaleString()} 控除）`;
     feeRow.style.display = 'block';
     lbl.textContent = '確定金額（手数料後 − 外注費）';
-    document.getElementById('calc-confirmed').textContent =
+    document.getElementById('calc-jpConfirmed').textContent =
       '¥' + Math.max(0, afterFee - x).toLocaleString();
   } else {
     feeRow.style.display = 'none';
     lbl.textContent = '確定金額（金額 ＋ お捻り − 外注費）';
-    document.getElementById('calc-confirmed').textContent =
+    document.getElementById('calc-jpConfirmed').textContent =
       (gross - x) ? '¥' + (gross - x).toLocaleString() : '¥0';
   }
 }
@@ -5450,7 +5290,6 @@ function jpOpenAlertSettings() {
 function jpSaveAlertSettings() {
   jpAlertDays = parseInt(document.getElementById('alert-days-sel').value);
   localStorage.setItem('kk_alert_days', jpAlertDays);
-  _sbSave('kk_alert_days', jpAlertDays);
   jpCloseModal('jp-modal-alert'); jpRenderTable();
   jpShowToast(`アラートを「${jpAlertDays}日以内」に設定しました`);
 }
@@ -5468,6 +5307,273 @@ jpRenderTable();
 </script>
 
 <script>
+// ========== 給料日計算機 ==========
+(function() {
+  // 日本の祝日（2026年）
+  const PD_HOLIDAYS = [
+    '2026-01-01','2026-01-12','2026-02-11','2026-03-20',
+    '2026-04-29','2026-05-03','2026-05-04','2026-05-05',
+    '2026-07-20','2026-08-10','2026-09-21','2026-09-22',
+    '2026-10-12','2026-11-03','2026-11-23',
+    '2027-01-01','2027-01-11','2027-02-11','2027-03-21',
+    '2027-04-29','2027-05-03','2027-05-04','2027-05-05',
+  ];
+
+  function pdToLocalStr(d) {
+    const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), dt = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${dt}`;
+  }
+  function pdFormatDate(s) {
+    if (!s) return '';
+    const d = new Date(s+'T00:00:00');
+    const days = ['日','月','火','水','木','金','土'];
+    return `${d.getMonth()+1}/${d.getDate()}(${days[d.getDay()]})`;
+  }
+  function pdFmtCur(n) {
+    const v = Math.floor(n);
+    return (v < 0 ? '-¥' : '¥') + Math.abs(v).toLocaleString('ja-JP');
+  }
+  function pdIsBusinessDay(d) {
+    const s = pdToLocalStr(d), dow = d.getDay();
+    return dow !== 0 && dow !== 6 && !PD_HOLIDAYS.includes(s);
+  }
+  function pdGetNextPayday() {
+    const inp = document.getElementById('pd-payday');
+    if (inp && inp.value) return inp.value;
+    const today = new Date(), y = today.getFullYear(), m = today.getMonth(), cd = today.getDate();
+    let target = new Date(y, m, 27);
+    if (cd > 27) target = new Date(y, m+1, 27);
+    // 土日祝なら前営業日にずらす
+    while (!pdIsBusinessDay(target)) target.setDate(target.getDate()-1);
+    return pdToLocalStr(target);
+  }
+
+  // データ保存・読込
+  function pdLoad() {
+    return {
+      balance:  parseInt(localStorage.getItem('kk_pd_balance') || '50000'),
+      payday:   localStorage.getItem('kk_pd_payday') || '',
+      incomes:  JSON.parse(localStorage.getItem('kk_pd_incomes') || '[]'),
+      payments: JSON.parse(localStorage.getItem('kk_pd_payments') || '[]'),
+    };
+  }
+  function pdSave(data) {
+    localStorage.setItem('kk_pd_balance',  data.balance);
+    localStorage.setItem('kk_pd_payday',   data.payday);
+    localStorage.setItem('kk_pd_incomes',  JSON.stringify(data.incomes));
+    localStorage.setItem('kk_pd_payments', JSON.stringify(data.payments));
+  }
+
+  // 計算ロジック
+  function pdCalc(data) {
+    const nextPayday = pdGetNextPayday();
+    const paydayDate = new Date(nextPayday+'T00:00:00');
+    const today = new Date(); today.setHours(0,0,0,0);
+    let totalExp = 0, futureInc = 0;
+    data.payments.forEach(p => { if (new Date(p.date+'T00:00:00') <= paydayDate) totalExp += p.amount; });
+    data.incomes.forEach(i  => { if (new Date(i.date+'T00:00:00') <= paydayDate) futureInc += i.amount; });
+    const available = data.balance + futureInc - totalExp;
+    const days = Math.max(Math.ceil((paydayDate - today) / 86400000), 1);
+    const weeks = Math.max(Math.ceil(days / 7), 1);
+    return { available, daily: Math.floor(available / days), weekly: Math.floor(available / weeks), days, nextPayday };
+  }
+
+  // 画面更新
+  window.pdRender = function() {
+    const data = pdLoad();
+    const el_balance = document.getElementById('pd-balance');
+    const el_payday  = document.getElementById('pd-payday');
+    if (el_balance) el_balance.value = data.balance;
+    if (el_payday && data.payday) el_payday.value = data.payday;
+
+    pdUpdate();
+  };
+
+  window.pdUpdate = function() {
+    const el_balance = document.getElementById('pd-balance');
+    const el_payday  = document.getElementById('pd-payday');
+    if (!el_balance) return;
+
+    const data = pdLoad();
+    data.balance = parseInt(el_balance.value) || 0;
+    data.payday  = el_payday ? el_payday.value : '';
+    pdSave(data);
+
+    const c = pdCalc(data);
+    const avEl = document.getElementById('pd-available-balance');
+    if (avEl) {
+      avEl.textContent = pdFmtCur(c.available);
+      avEl.className = 'payday-result-value' + (c.available < 0 ? ' pd-negative' : '');
+    }
+    const setTxt = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+    setTxt('pd-weekly-budget', pdFmtCur(c.weekly));
+    setTxt('pd-daily-budget',  pdFmtCur(c.daily));
+    setTxt('pd-payday-display', pdFormatDate(c.nextPayday));
+    setTxt('pd-days-until', c.days);
+    setTxt('pd-payday-default', `デフォルト: ${pdFormatDate(pdGetNextPayday())}`);
+
+    pdRenderTimeline(data, c.nextPayday);
+    pdRenderIncomeList(data.incomes);
+    pdRenderPaymentList(data.payments);
+  };
+
+  function pdRenderTimeline(data, nextPayday) {
+    const box = document.getElementById('pd-timeline-box');
+    const list = document.getElementById('pd-timeline-list');
+    if (!box || !list) return;
+    const events = [];
+    data.payments.forEach(p => events.push({ type:'payment', date:p.date, amount:p.amount, memo:p.memo||'' }));
+    data.incomes.forEach(i  => events.push({ type:'income',  date:i.date, amount:i.amount, memo:i.memo||'' }));
+    events.push({ type:'payday', date:nextPayday, amount:0 });
+    events.sort((a,b) => new Date(a.date) - new Date(b.date));
+    if (events.length > 0) {
+      box.style.display = 'block';
+      list.innerHTML = events.map(ev => {
+        const isPayday = ev.type === 'payday';
+        const amtHtml = isPayday ? '' : `<span style="font-weight:700;color:${ev.type==='income'?'#00D084':'#FF9671'}">${ev.type==='payment'?'-':'+'} ${pdFmtCur(ev.amount)}</span>`;
+        const memoHtml = ev.memo ? `<div style="font-size:11px;color:#888;margin-top:2px;">${ev.memo}</div>` : '';
+        const label = isPayday ? '<div style="font-size:11px;color:#FF6B9D;font-weight:700;">給料日</div>' : '';
+        return `<div class="pd-timeline-item ${ev.type}">
+          <div><strong>${pdFormatDate(ev.date)}</strong>${label}${memoHtml}</div>
+          ${amtHtml}
+        </div>`;
+      }).join('');
+    } else {
+      box.style.display = 'none';
+    }
+  }
+
+  function pdRenderIncomeList(incomes) {
+    const el = document.getElementById('pd-income-list'); if (!el) return;
+    el.innerHTML = incomes.map((item,i) => `
+      <div class="pd-item-card income">
+        <div>
+          <div style="font-weight:700;">${pdFmtCur(item.amount)}</div>
+          <div style="font-size:12px;color:#666;">${pdFormatDate(item.date)}${item.memo ? '　'+item.memo : ''}</div>
+        </div>
+        <button class="pd-item-del" style="background:#FF9671;" onclick="pdRemoveIncome(${i})">削除</button>
+      </div>`).join('');
+  }
+
+  function pdRenderPaymentList(payments) {
+    const el = document.getElementById('pd-payment-list'); if (!el) return;
+    el.innerHTML = payments.map((item,i) => `
+      <div class="pd-item-card payment">
+        <div>
+          <div style="font-weight:700;">${pdFmtCur(item.amount)}</div>
+          <div style="font-size:12px;color:#666;">${pdFormatDate(item.date)}${item.memo ? '　'+item.memo : ''}</div>
+        </div>
+        <button class="pd-item-del" style="background:#FF6B9D;" onclick="pdRemovePayment(${i})">削除</button>
+      </div>`).join('');
+  }
+
+  window.pdAddIncome = function() {
+    const a = parseInt(document.getElementById('pd-income-amount').value);
+    const d = document.getElementById('pd-income-date').value;
+    const m = document.getElementById('pd-income-memo').value;
+    if (!a || a <= 0 || !d) { showToast('金額と日付を入力してください'); return; }
+    const data = pdLoad();
+    data.incomes.push({ amount:a, date:d, memo:m });
+    pdSave(data);
+    document.getElementById('pd-income-amount').value = '';
+    document.getElementById('pd-income-date').value   = '';
+    document.getElementById('pd-income-memo').value   = '';
+    pdUpdate();
+    showToast('見込み入金を追加しました');
+  };
+
+  window.pdRemoveIncome = function(i) {
+    const data = pdLoad();
+    data.incomes.splice(i, 1);
+    pdSave(data);
+    pdUpdate();
+  };
+
+  window.pdAddPayment = function() {
+    const a = parseInt(document.getElementById('pd-payment-amount').value);
+    const d = document.getElementById('pd-payment-date').value;
+    const m = document.getElementById('pd-payment-memo').value;
+    if (!a || a <= 0 || !d) { showToast('金額と日付を入力してください'); return; }
+    const data = pdLoad();
+    data.payments.push({ amount:a, date:d, memo:m });
+    pdSave(data);
+    document.getElementById('pd-payment-amount').value = '';
+    document.getElementById('pd-payment-date').value   = '';
+    document.getElementById('pd-payment-memo').value   = '';
+    pdUpdate();
+    showToast('支払い予定を追加しました');
+  };
+
+  window.pdRemovePayment = function(i) {
+    const data = pdLoad();
+    data.payments.splice(i, 1);
+    pdSave(data);
+    pdUpdate();
+  };
+
+  // ★ 連携機能：支出明細（kk_detail_items）から「予定」データを取込
+  window.pdSyncFromDetail = function() {
+    try {
+      // kk_transactions から未来の支出を取得
+      const txs = JSON.parse(localStorage.getItem('kk_transactions') || '[]');
+      const today = new Date(); today.setHours(0,0,0,0);
+      const nextPayday = pdGetNextPayday();
+      const paydayDate = new Date(nextPayday+'T00:00:00');
+
+      // 今日以降・給料日まで の出費取引を抽出
+      const futureTx = txs.filter(t => {
+        const td = new Date((t.date||'')+'T00:00:00');
+        return td >= today && td <= paydayDate && t.amount < 0;
+      });
+
+      if (futureTx.length === 0) {
+        // kk_detail_items からも探す
+        const detail = JSON.parse(localStorage.getItem('kk_detail_items') || '{}');
+        const data = pdLoad();
+        let added = 0;
+        Object.values(detail).forEach(catObj => {
+          Object.values(catObj).forEach(items => {
+            if (!Array.isArray(items)) return;
+            items.forEach(item => {
+              const td = new Date((item.date||'')+'T00:00:00');
+              if (td >= today && td <= paydayDate && item.amount > 0) {
+                // 重複チェック
+                const dup = data.payments.some(p => p.date === item.date && p.amount === item.amount);
+                if (!dup) { data.payments.push({ amount:item.amount, date:item.date, memo:item.desc||'' }); added++; }
+              }
+            });
+          });
+        });
+        if (added > 0) { pdSave(data); pdUpdate(); showToast(`${added}件の支払い予定を取込みました`); }
+        else showToast('取込める予定データが見つかりませんでした');
+        return;
+      }
+
+      const data = pdLoad();
+      let added = 0;
+      futureTx.forEach(t => {
+        const dup = data.payments.some(p => p.date === t.date && p.amount === Math.abs(t.amount));
+        if (!dup) {
+          data.payments.push({ amount:Math.abs(t.amount), date:t.date, memo:t.description||t.desc||'' });
+          added++;
+        }
+      });
+      if (added > 0) { pdSave(data); pdUpdate(); showToast(`${added}件の支払い予定を取込みました`); }
+      else showToast('すでに取込済みか、対象データがありません');
+    } catch(e) {
+      showToast('データ取込中にエラーが発生しました');
+    }
+  };
+
+  // ★ ダッシュボードに給料日情報を表示するためのヘルパー
+  window.pdGetInfo = function() {
+    const data = pdLoad();
+    const c = pdCalc(data);
+    return { available: c.available, daily: c.daily, weekly: c.weekly, days: c.days, nextPayday: c.nextPayday };
+  };
+
+})();
+
 /* ========== モバイルサイドバー制御 ========== */
 function toggleSidebar() {
   document.body.classList.toggle('sidebar-open');
@@ -5494,12 +5600,6 @@ window.addEventListener('resize', function() {
   }
 });
 </script>
-
-<!-- フローティングクラウド保存ボタン -->
-<div id="float-cloud-btn" onclick="sbPushAll()" title="クラウドへ全データを保存">
-  <span id="float-cloud-icon">☁️</span>
-  <span id="float-cloud-text">クラウドへ保存</span>
-</div>
 
 </body>
 </html>
