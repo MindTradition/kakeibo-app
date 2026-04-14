@@ -822,6 +822,26 @@ body.sidebar-open #mob-hamburger span:nth-child(3) { transform: translateY(-7.5p
 }
 #page-payday .pd-item-card.income { background:#E5FFF5; }
 #page-payday .pd-item-card.payment { background:#FFF5E5; }
+#page-payday .pd-item-card.payment.paid {
+  background:#F0F0F0; opacity:0.7;
+}
+#page-payday .pd-item-card.payment.paid .pd-paid-label {
+  display:inline-block; font-size:10px; background:#22c55e; color:white;
+  border-radius:4px; padding:1px 6px; margin-left:6px; font-weight:700; vertical-align:middle;
+}
+#page-payday .pd-item-card.payment.paid .pd-payment-amount {
+  text-decoration:line-through; color:#aaa !important;
+}
+#page-payday .pd-timeline-item.payment.paid {
+  background:#F5F5F5; border-left-color:#aaa; opacity:0.65;
+}
+#page-payday .pd-timeline-item.payment.paid .pd-paid-badge {
+  font-size:10px; background:#22c55e; color:white;
+  border-radius:4px; padding:1px 5px; margin-left:4px; font-weight:700;
+}
+#page-payday .pd-paid-check {
+  width:18px; height:18px; cursor:pointer; accent-color:#22c55e; margin-right:8px; flex-shrink:0;
+}
 #page-payday .pd-item-del {
   padding:4px 10px; border:none; border-radius:6px; cursor:pointer;
   font-size:11px; color:white;
@@ -1841,8 +1861,29 @@ body.sidebar-open #mob-hamburger span:nth-child(3) { transform: translateY(-7.5p
   <div class="page-header">
     <div>
       <div class="page-title">⚙️ マスター管理</div>
-      <div class="page-subtitle">データの確認・月単位削除・銀行別削除・全リセット</div>
+      <div class="page-subtitle">データの確認・バックアップ・月単位削除・銀行別削除・全リセット</div>
     </div>
+  </div>
+
+  <!-- ★ バックアップ / リストア -->
+  <div class="master-section" style="border-color:#6366f1;background:linear-gradient(135deg,#eef2ff 0%,#f5f3ff 100%);">
+    <div class="master-section-title" style="color:#4338ca;">💾 データバックアップ / リストア</div>
+    <div class="master-section-sub" style="color:#6366f1;">全データをJSONファイルにエクスポート・インポートできます。アプリ更新前に必ずバックアップしてください。</div>
+
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;">
+      <!-- バックアップボタン -->
+      <button class="btn" style="background:#4f46e5;color:#fff;font-weight:700;padding:10px 20px;border-radius:10px;border:none;cursor:pointer;font-size:13px;" onclick="exportBackup()">
+        📤 バックアップをダウンロード
+      </button>
+
+      <!-- リストアボタン -->
+      <label style="background:#fff;color:#4338ca;font-weight:700;padding:10px 20px;border-radius:10px;border:2px solid #6366f1;cursor:pointer;font-size:13px;display:inline-flex;align-items:center;gap:6px;">
+        📥 バックアップから復元
+        <input type="file" accept=".json" style="display:none;" onchange="importBackup(this)">
+      </label>
+    </div>
+
+    <div id="backup-status" style="margin-top:12px;font-size:12px;color:#4338ca;display:none;padding:8px 12px;background:#e0e7ff;border-radius:8px;"></div>
   </div>
 
   <!-- データ概要 -->
@@ -1875,6 +1916,26 @@ body.sidebar-open #mob-hamburger span:nth-child(3) { transform: translateY(-7.5p
     <div class="master-section-title">🗂️ データ種別ごとの全削除</div>
     <div class="master-section-sub">それぞれのデータを個別にすべて削除できます</div>
     <div id="master-type-list"></div>
+  </div>
+
+  <!-- ★ カテゴリ管理 -->
+  <div class="master-section" style="border-color:#f59e0b;background:#fffbeb;">
+    <div class="master-section-title" style="color:#92400e;">🏷️ カテゴリ管理</div>
+    <div class="master-section-sub" style="color:#b45309;">カテゴリの追加・削除ができます。🔒マークは削除できません。</div>
+
+    <!-- 追加フォーム -->
+    <div style="display:flex;gap:8px;margin:12px 0 16px;align-items:center;flex-wrap:wrap;">
+      <input type="text" id="new-cat-input" placeholder="新しいカテゴリ名" maxlength="20"
+        style="height:36px;padding:0 12px;border:1px solid #fcd34d;border-radius:8px;font-size:13px;flex:1;min-width:140px;"
+        onkeydown="if(event.key==='Enter')addCategory()">
+      <button class="btn" onclick="addCategory()"
+        style="background:#f59e0b;color:#fff;font-weight:700;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;white-space:nowrap;">
+        ＋ 追加
+      </button>
+    </div>
+
+    <!-- カテゴリ一覧 -->
+    <div id="master-cat-list" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
   </div>
 
   <!-- 全リセット -->
@@ -2019,11 +2080,36 @@ body.sidebar-open #mob-hamburger span:nth-child(3) { transform: translateY(-7.5p
 
 <script>
 // ========== データ定義 ==========
-const CATEGORIES = [
+const CATEGORIES_DEFAULT = [
   '食費','日用品','水道光熱費','通信費','医療費','教育費','交通費','被服費',
   '娯楽費','弁護士費用','経費(報酬)','経費(固定費)','経費(購入)',
   '手数料','現金引出し','引き出し','PayPay','同居人へ','給与','収入利益','その他','不明'
 ];
+// システムで使用するため削除不可のカテゴリ
+const CATEGORIES_PROTECTED = new Set([
+  '給与','収入利益','不明','引き出し','現金引出し','PayPay','同居人へ'
+]);
+let CATEGORIES = (function() {
+  try {
+    const saved = localStorage.getItem('kk_categories');
+    return saved ? JSON.parse(saved) : [...CATEGORIES_DEFAULT];
+  } catch { return [...CATEGORIES_DEFAULT]; }
+})();
+function saveCategoriesData() {
+  localStorage.setItem('kk_categories', JSON.stringify(CATEGORIES));
+}
+function refreshAllCategorySelects() {
+  // 取引フィルター
+  const tc = document.querySelector('#tx-filter-cat, select[id$="-cat-filter"]');
+  if (tc) tc.innerHTML = `<option value="">すべてのカテゴリ</option>` + CATEGORIES.map(c=>`<option>${c}</option>`).join('');
+  // 一括変更バー
+  const bulkSel = document.getElementById('bulk-cat-sel');
+  if (bulkSel) bulkSel.innerHTML = CATEGORIES.map(c=>`<option>${c}</option>`).join('');
+  // ルールモーダル・取引フォーム
+  document.querySelectorAll('#rule-cat, #tx-cat').forEach(s => {
+    s.innerHTML = CATEGORIES.map(c=>`<option>${c}</option>`).join('');
+  });
+}
 
 const BANKS = {
   '三井住友': { icon: '🏦', color: '#2A7A96', bg: '#D6EEF5' },
@@ -3631,6 +3717,9 @@ function renderMaster() {
       <span class="master-del-count">${d.cnt}</span>
       <button class="btn btn-sm btn-warn" onclick="${d.fn}">削除</button>
     </div>`).join('');
+
+  // --- カテゴリ一覧 ---
+  renderCategoryManager();
 }
 
 function updateMonthPreview() {
@@ -3669,6 +3758,134 @@ function deleteAllJobs()     { if (!confirmDel('仕事進捗',   jobs.length))  
 function deleteAllRules()    { if (!confirmDel('分類ルール', rules.length))        return; rules = [];        save('kk_rules', rules);           masterLog('✅ 分類ルールを全削除しました'); renderMaster(); }
 function deleteAllDetail()   { detailItems = {};   save('kk_detail_items', detailItems);   masterLog('✅ 支出明細データを全削除しました'); renderMaster(); }
 function deleteAllRoommate() { roommateData = {};  save('kk_roommate', roommateData);       masterLog('✅ 同居人データを全削除しました'); renderMaster(); }
+
+// ========== バックアップ / リストア ==========
+const BACKUP_KEYS = [
+  'kk_transactions', 'kk_expenses', 'kk_jobs', 'kk_rules',
+  'kk_balances', 'kk_detail_items', 'kk_roommate', 'kk_submission',
+  'kk_extra_months', 'kk_alert_days', 'kk_categories',
+  'kk_pd_balance', 'kk_pd_payday', 'kk_pd_incomes', 'kk_pd_payments',
+  'kk_work_jobs'
+];
+
+function exportBackup() {
+  const backup = { _version: 1, _date: new Date().toISOString(), data: {} };
+  BACKUP_KEYS.forEach(key => {
+    const val = localStorage.getItem(key);
+    if (val !== null) backup.data[key] = val;
+  });
+  const json = JSON.stringify(backup, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const now  = new Date();
+  const ymd  = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+  const a = document.createElement('a');
+  a.href = url; a.download = `家計管理バックアップ_${ymd}.json`;
+  a.click(); URL.revokeObjectURL(url);
+  showBackupStatus('✅ バックアップファイルをダウンロードしました', '#4338ca', '#e0e7ff');
+  showToast('💾 バックアップが完了しました');
+}
+
+function importBackup(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const backup = JSON.parse(e.target.result);
+      if (!backup.data || typeof backup.data !== 'object') throw new Error('形式が正しくありません');
+      const keys = Object.keys(backup.data);
+      const dateStr = backup._date ? new Date(backup._date).toLocaleString('ja-JP') : '不明';
+      if (!confirm(`📥 バックアップを復元します\n\nバックアップ日時: ${dateStr}\n対象データ: ${keys.length}件\n\n現在のデータはすべて上書きされます。\n本当に復元しますか？`)) {
+        input.value = ''; return;
+      }
+      keys.forEach(key => {
+        if (BACKUP_KEYS.includes(key)) localStorage.setItem(key, backup.data[key]);
+      });
+      // メモリ上の変数も再読込
+      transactions  = load('kk_transactions', []);
+      expenses      = load('kk_expenses', []);
+      jobs          = load('kk_jobs', []);
+      rules         = load('kk_rules', []);
+      balances      = load('kk_balances', { ...INITIAL_BALANCE });
+      detailItems   = load('kk_detail_items', {});
+      try {
+        const savedCats = localStorage.getItem('kk_categories');
+        if (savedCats) { CATEGORIES.length = 0; JSON.parse(savedCats).forEach(c => CATEGORIES.push(c)); }
+      } catch {};
+      input.value = '';
+      showBackupStatus(`✅ 復元完了（${dateStr} のデータ）。ページを再読込して反映します。`, '#166534', '#dcfce7');
+      showToast('📥 データを復元しました');
+      setTimeout(() => location.reload(), 1800);
+    } catch(err) {
+      showBackupStatus('❌ 読み込み失敗：' + err.message, '#991b1b', '#fee2e2');
+      showToast('❌ バックアップの読み込みに失敗しました');
+      input.value = '';
+    }
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+// ========== カテゴリ管理 ==========
+function renderCategoryManager() {
+  const el = document.getElementById('master-cat-list'); if (!el) return;
+  el.innerHTML = CATEGORIES.map((cat, i) => {
+    const isProtected = CATEGORIES_PROTECTED.has(cat);
+    return `<span style="display:inline-flex;align-items:center;gap:4px;background:${isProtected?'#fef3c7':'#fff'};
+      border:1px solid ${isProtected?'#fcd34d':'#e5e7eb'};border-radius:20px;padding:5px 12px;font-size:13px;font-weight:600;">
+      ${isProtected ? '🔒 ' : ''}${cat}
+      ${isProtected
+        ? `<span style="font-size:10px;color:#b45309;margin-left:2px;">保護</span>`
+        : `<button onclick="removeCategory(${i})" title="削除"
+            style="background:none;border:none;cursor:pointer;color:#ef4444;font-size:14px;line-height:1;padding:0 0 0 4px;font-weight:700;">✕</button>`}
+    </span>`;
+  }).join('');
+}
+
+function addCategory() {
+  const input = document.getElementById('new-cat-input'); if (!input) return;
+  const name = input.value.trim();
+  if (!name) { showToast('カテゴリ名を入力してください'); return; }
+  if (CATEGORIES.includes(name)) { showToast('すでに同じカテゴリが存在します'); return; }
+  if (name.length > 20) { showToast('カテゴリ名は20文字以内にしてください'); return; }
+  CATEGORIES.push(name);
+  saveCategoriesData();
+  input.value = '';
+  renderCategoryManager();
+  refreshAllCategorySelects();
+  showToast(`✅ カテゴリ「${name}」を追加しました`);
+}
+
+function removeCategory(i) {
+  const cat = CATEGORIES[i];
+  if (!cat) return;
+  if (CATEGORIES_PROTECTED.has(cat)) { showToast('このカテゴリは削除できません'); return; }
+  // 使用中チェック
+  const usedCount = transactions.filter(t => t.category === cat).length;
+  const msg = usedCount > 0
+    ? `カテゴリ「${cat}」は${usedCount}件の取引で使用中です。\n削除すると該当取引は「不明」になります。\n本当に削除しますか？`
+    : `カテゴリ「${cat}」を削除しますか？`;
+  if (!confirm(msg)) return;
+  // 使用中取引を「不明」に変更
+  if (usedCount > 0) {
+    transactions.forEach(t => { if (t.category === cat) t.category = '不明'; });
+    save('kk_transactions', transactions);
+  }
+  CATEGORIES.splice(i, 1);
+  saveCategoriesData();
+  renderCategoryManager();
+  refreshAllCategorySelects();
+  showToast(`🗑️ カテゴリ「${cat}」を削除しました${usedCount>0?' （'+usedCount+'件を「不明」に変更）':''}`);
+}
+
+function showBackupStatus(msg, color, bg) {
+  const el = document.getElementById('backup-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = color;
+  el.style.background = bg;
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 8000);
+}
 
 function resetAllData() {
   if (!confirm('⚠️ すべてのデータを削除します。この操作は元に戻せません。\n本当に実行しますか？')) return;
@@ -5370,7 +5587,7 @@ jpRenderTable();
     const paydayDate = new Date(nextPayday+'T00:00:00');
     const today = new Date(); today.setHours(0,0,0,0);
     let totalExp = 0, futureInc = 0;
-    data.payments.forEach(p => { if (new Date(p.date+'T00:00:00') <= paydayDate) totalExp += p.amount; });
+    data.payments.forEach(p => { if (!p.paid && new Date(p.date+'T00:00:00') <= paydayDate) totalExp += p.amount; });
     data.incomes.forEach(i  => { if (new Date(i.date+'T00:00:00') <= paydayDate) futureInc += i.amount; });
     const available = data.balance + futureInc - totalExp;
     const days = Math.max(Math.ceil((paydayDate - today) / 86400000), 1);
@@ -5422,19 +5639,23 @@ jpRenderTable();
     const list = document.getElementById('pd-timeline-list');
     if (!box || !list) return;
     const events = [];
-    data.payments.forEach(p => events.push({ type:'payment', date:p.date, amount:p.amount, memo:p.memo||'' }));
-    data.incomes.forEach(i  => events.push({ type:'income',  date:i.date, amount:i.amount, memo:i.memo||'' }));
-    events.push({ type:'payday', date:nextPayday, amount:0 });
+    data.payments.forEach(p => events.push({ type:'payment', date:p.date, amount:p.amount, memo:p.memo||'', paid:!!p.paid }));
+    data.incomes.forEach(i  => events.push({ type:'income',  date:i.date, amount:i.amount, memo:i.memo||'', paid:false }));
+    events.push({ type:'payday', date:nextPayday, amount:0, paid:false });
     events.sort((a,b) => new Date(a.date) - new Date(b.date));
     if (events.length > 0) {
       box.style.display = 'block';
       list.innerHTML = events.map(ev => {
         const isPayday = ev.type === 'payday';
-        const amtHtml = isPayday ? '' : `<span style="font-weight:700;color:${ev.type==='income'?'#00D084':'#FF9671'}">${ev.type==='payment'?'-':'+'} ${pdFmtCur(ev.amount)}</span>`;
+        const paidBadge = (ev.type==='payment' && ev.paid) ? '<span class="pd-paid-badge">支払済</span>' : '';
+        const amtColor = ev.paid ? '#aaa' : (ev.type==='income'?'#00D084':'#FF9671');
+        const amtStyle = ev.paid ? 'text-decoration:line-through;' : '';
+        const amtHtml = isPayday ? '' : `<span style="font-weight:700;color:${amtColor};${amtStyle}">${ev.type==='payment'?'-':'+'} ${pdFmtCur(ev.amount)}</span>`;
         const memoHtml = ev.memo ? `<div style="font-size:11px;color:#888;margin-top:2px;">${ev.memo}</div>` : '';
         const label = isPayday ? '<div style="font-size:11px;color:#FF6B9D;font-weight:700;">給料日</div>' : '';
-        return `<div class="pd-timeline-item ${ev.type}">
-          <div><strong>${pdFormatDate(ev.date)}</strong>${label}${memoHtml}</div>
+        const paidClass = (ev.type==='payment' && ev.paid) ? ' paid' : '';
+        return `<div class="pd-timeline-item ${ev.type}${paidClass}">
+          <div><strong>${pdFormatDate(ev.date)}</strong>${paidBadge}${label}${memoHtml}</div>
           ${amtHtml}
         </div>`;
       }).join('');
@@ -5457,14 +5678,23 @@ jpRenderTable();
 
   function pdRenderPaymentList(payments) {
     const el = document.getElementById('pd-payment-list'); if (!el) return;
-    el.innerHTML = payments.map((item,i) => `
-      <div class="pd-item-card payment">
-        <div>
-          <div style="font-weight:700;">${pdFmtCur(item.amount)}</div>
-          <div style="font-size:12px;color:#666;">${pdFormatDate(item.date)}${item.memo ? '　'+item.memo : ''}</div>
+    el.innerHTML = payments.map((item,i) => {
+      const isPaid = !!item.paid;
+      const paidClass = isPaid ? ' paid' : '';
+      const paidLabel = isPaid ? '<span class="pd-paid-label">支払済</span>' : '';
+      const amtStyle = isPaid ? 'text-decoration:line-through;color:#aaa;' : 'color:#FF6B9D;';
+      return `
+      <div class="pd-item-card payment${paidClass}">
+        <div style="display:flex;align-items:center;flex:1;min-width:0;">
+          <input type="checkbox" class="pd-paid-check" ${isPaid?'checked':''} onchange="pdTogglePaid(${i},this.checked)" title="支払済にする">
+          <div style="min-width:0;">
+            <div class="pd-payment-amount" style="font-weight:700;${amtStyle}">${pdFmtCur(item.amount)}${paidLabel}</div>
+            <div style="font-size:12px;color:#666;">${pdFormatDate(item.date)}${item.memo ? '　'+item.memo : ''}</div>
+          </div>
         </div>
-        <button class="pd-item-del" style="background:#FF6B9D;" onclick="pdRemovePayment(${i})">削除</button>
-      </div>`).join('');
+        <button class="pd-item-del" style="background:#FF6B9D;margin-left:8px;" onclick="pdRemovePayment(${i})">削除</button>
+      </div>`;
+    }).join('');
   }
 
   window.pdAddIncome = function() {
@@ -5495,7 +5725,7 @@ jpRenderTable();
     const m = document.getElementById('pd-payment-memo').value;
     if (!a || a <= 0 || !d) { showToast('金額と日付を入力してください'); return; }
     const data = pdLoad();
-    data.payments.push({ amount:a, date:d, memo:m });
+    data.payments.push({ amount:a, date:d, memo:m, paid:false });
     pdSave(data);
     document.getElementById('pd-payment-amount').value = '';
     document.getElementById('pd-payment-date').value   = '';
@@ -5509,6 +5739,16 @@ jpRenderTable();
     data.payments.splice(i, 1);
     pdSave(data);
     pdUpdate();
+  };
+
+  // ★ 支払済トグル
+  window.pdTogglePaid = function(i, checked) {
+    const data = pdLoad();
+    if (data.payments[i] === undefined) return;
+    data.payments[i].paid = !!checked;
+    pdSave(data);
+    pdUpdate();
+    showToast(checked ? '✅ 支払済にしました' : '↩️ 未払いに戻しました');
   };
 
   // ★ 連携機能：支出明細（kk_detail_items）から「予定」データを取込
@@ -5539,7 +5779,7 @@ jpRenderTable();
               if (td >= today && td <= paydayDate && item.amount > 0) {
                 // 重複チェック
                 const dup = data.payments.some(p => p.date === item.date && p.amount === item.amount);
-                if (!dup) { data.payments.push({ amount:item.amount, date:item.date, memo:item.desc||'' }); added++; }
+                if (!dup) { data.payments.push({ amount:item.amount, date:item.date, memo:item.desc||'', paid:false }); added++; }
               }
             });
           });
@@ -5554,7 +5794,7 @@ jpRenderTable();
       futureTx.forEach(t => {
         const dup = data.payments.some(p => p.date === t.date && p.amount === Math.abs(t.amount));
         if (!dup) {
-          data.payments.push({ amount:Math.abs(t.amount), date:t.date, memo:t.description||t.desc||'' });
+          data.payments.push({ amount:Math.abs(t.amount), date:t.date, memo:t.description||t.desc||'', paid:false });
           added++;
         }
       });
