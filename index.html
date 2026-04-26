@@ -876,6 +876,91 @@ body.sidebar-open #mob-hamburger span:nth-child(3) { transform: translateY(-7.5p
   #page-payday .payday-input-row-2 { grid-template-columns:1fr; }
 }
 
+/* ===== 給料日計算 拡張機能 ===== */
+/* 確定/見込みサマリー */
+#page-payday .pd-summary-table { width:100%; border-collapse:collapse; margin-top:4px; }
+#page-payday .pd-summary-table th { font-size:11px; font-weight:700; color:var(--text-muted); padding:5px 8px; text-align:center; }
+#page-payday .pd-summary-table th:first-child { text-align:left; }
+#page-payday .pd-summary-table td { padding:8px; text-align:center; font-size:14px; font-weight:700; }
+#page-payday .pd-summary-table td:first-child { text-align:left; font-size:12px; font-weight:600; color:var(--text-muted); }
+#page-payday .pd-summary-table tr.sim-row td { background:#fffde7; border-radius:6px; }
+#page-payday .pd-col-kakutei { background:#f1f8e9; border-radius:8px; }
+#page-payday .pd-col-mikomi  { background:#e3f2fd; border-radius:8px; }
+#page-payday .pd-badge-kakutei { font-size:10px; font-weight:700; color:#558b2f; display:block; margin-bottom:3px; }
+#page-payday .pd-badge-mikomi  { font-size:10px; font-weight:700; color:#1565c0; display:block; margin-bottom:3px; }
+#page-payday .pd-val-income  { color:#2e7d32; }
+#page-payday .pd-val-expense { color:#c62828; }
+#page-payday .pd-val-pos     { color:#1565c0; }
+#page-payday .pd-val-neg     { color:#ef4444; }
+#page-payday .pd-summary-divider { border:none; border-top:2px dashed #e0e0e0; margin:4px 0; }
+
+/* 警告バナー */
+#page-payday .pd-alert-banner {
+  display:none; background:#fff3e0; border-left:4px solid #ff9800;
+  border-radius:10px; padding:10px 14px; margin-bottom:16px;
+  font-size:12px; color:#e65100;
+}
+#page-payday .pd-alert-banner.show { display:block; }
+
+/* 貯蓄・投資 */
+#page-payday .pd-savings-card { background:var(--card); border-radius:18px; border:1px solid var(--border); padding:20px; margin-bottom:16px; box-shadow:0 2px 14px rgba(155,120,100,.07); }
+#page-payday .pd-savings-row  { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+#page-payday .pd-savings-row label { font-size:12px; color:var(--text-muted); width:90px; flex-shrink:0; }
+#page-payday .pd-savings-inp  { flex:1; padding:8px 12px; border:2px solid var(--border); border-radius:10px; font-size:13px; font-weight:700; text-align:right; outline:none; color:#6a1b9a; background:var(--card); }
+#page-payday .pd-savings-inp:focus { border-color:#9c27b0; }
+#page-payday .pd-savings-result { display:grid; grid-template-columns:1fr 1fr; gap:10px; background:#f3e5f5; border-radius:12px; padding:12px 14px; margin-top:4px; }
+#page-payday .pd-savings-result-item { text-align:center; }
+#page-payday .pd-savings-result-label { font-size:11px; color:#7b1fa2; margin-bottom:3px; }
+#page-payday .pd-savings-result-val   { font-size:16px; font-weight:800; }
+#page-payday .pd-savings-color { color:#6a1b9a; }
+
+/* 固定費/変動費 */
+#page-payday .pd-fixed-card { background:var(--card); border-radius:18px; border:1px solid var(--border); padding:20px; margin-bottom:16px; box-shadow:0 2px 14px rgba(155,120,100,.07); }
+#page-payday .pd-fixed-bar-wrap { margin-bottom:12px; }
+#page-payday .pd-fixed-bar-label { display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted); margin-bottom:5px; }
+#page-payday .pd-fixed-bar-bg  { background:#eee; border-radius:99px; height:10px; overflow:hidden; }
+#page-payday .pd-fixed-bar-fixed    { height:100%; border-radius:99px; background:linear-gradient(90deg,#5c6bc0,#7986cb); transition:width .4s; }
+#page-payday .pd-fixed-bar-variable { height:100%; border-radius:99px; background:linear-gradient(90deg,#ef5350,#e57373); transition:width .4s; }
+#page-payday .pd-ratio-wrap { display:flex; height:18px; border-radius:99px; overflow:hidden; margin-top:10px; }
+#page-payday .pd-ratio-fixed    { background:#5c6bc0; display:flex; align-items:center; justify-content:center; font-size:10px; color:white; font-weight:700; transition:width .4s; }
+#page-payday .pd-ratio-variable { background:#ef5350; display:flex; align-items:center; justify-content:center; font-size:10px; color:white; font-weight:700; transition:width .4s; }
+#page-payday .pd-fixed-legend { display:flex; gap:16px; margin-top:6px; justify-content:center; font-size:12px; color:var(--text-muted); }
+#page-payday .pd-fixed-legend span { display:flex; align-items:center; gap:5px; }
+#page-payday .pd-dot-fixed    { width:10px; height:10px; border-radius:50%; background:#5c6bc0; }
+#page-payday .pd-dot-variable { width:10px; height:10px; border-radius:50%; background:#ef5350; }
+
+/* カテゴリータグ・固定変動トグル */
+#page-payday .pd-cat-tag { display:inline-block; font-size:10px; padding:1px 7px; border-radius:99px; font-weight:600; margin-right:4px; margin-top:2px; }
+#page-payday .pd-type-toggle { font-size:10px; padding:2px 7px; border-radius:99px; border:none; cursor:pointer; font-weight:700; }
+#page-payday .pd-type-toggle.fixed    { background:#e8eaf6; color:#5c6bc0; }
+#page-payday .pd-type-toggle.variable { background:#ffebee; color:#c62828; }
+
+/* カテゴリー別合計グリッド */
+#page-payday .pd-cat-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px; }
+#page-payday .pd-cat-item { background:#f8f9fa; border-radius:10px; padding:10px 12px; display:flex; align-items:center; gap:8px; }
+#page-payday .pd-cat-icon { font-size:1.1rem; }
+#page-payday .pd-cat-name { font-size:11px; color:var(--text-muted); }
+#page-payday .pd-cat-amt  { font-size:13px; font-weight:700; color:var(--text); }
+
+/* フィルタータブ */
+#page-payday .pd-filter-wrap { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
+#page-payday .pd-filter-btn { padding:4px 12px; border-radius:99px; border:none; font-size:11px; cursor:pointer; font-weight:600; background:#e0e0e0; color:#555; transition:all .15s; }
+#page-payday .pd-filter-btn.active { background:var(--primary); color:white; }
+
+/* 支出ランキングバー */
+#page-payday .pd-rank-item { margin-bottom:10px; }
+#page-payday .pd-rank-label { display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:3px; }
+#page-payday .pd-rank-bg   { background:#eee; border-radius:99px; height:8px; overflow:hidden; }
+#page-payday .pd-rank-fill { height:100%; border-radius:99px; transition:width .4s; }
+
+/* 金額インライン編集 */
+#page-payday .pd-amt-editable { cursor:pointer; border-bottom:1px dotted #aaa; }
+#page-payday .pd-amt-editable:hover { border-bottom-color:var(--primary); }
+#page-payday .pd-amt-input { width:90px; padding:3px 8px; border:2px solid var(--primary); border-radius:6px; font-size:13px; font-weight:700; text-align:right; outline:none; }
+
+/* フォーム select 追加分 */
+#page-payday select.pd-inp { width:100%; padding:9px 12px; border:2px solid var(--border); border-radius:10px; font-size:13px; background:var(--card); color:var(--text); }
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.min.js"></script>
@@ -1954,7 +2039,7 @@ body.sidebar-open #mob-hamburger span:nth-child(3) { transform: translateY(-7.5p
   <div class="page-header">
     <div>
       <div class="page-title">📅 給料日計算</div>
-      <div class="page-subtitle">残金から給料日までの日割り・週割り予算を計算</div>
+      <div class="page-subtitle">残金・収支・貯蓄を一括管理</div>
     </div>
   </div>
 
@@ -1964,10 +2049,13 @@ body.sidebar-open #mob-hamburger span:nth-child(3) { transform: translateY(-7.5p
     <button class="pd-sync-btn" onclick="pdSyncFromDetail()">📥 支払い予定を取込</button>
   </div>
 
-  <!-- 結果表示ボックス -->
+  <!-- 警告バナー -->
+  <div class="pd-alert-banner" id="pd-alert-banner"></div>
+
+  <!-- メインKPIボックス -->
   <div class="payday-result-box">
     <div class="payday-result-main">
-      <div class="payday-result-label">利用可能残金</div>
+      <div class="payday-result-label">利用可能残金（見込み）</div>
       <div class="payday-result-value" id="pd-available-balance">¥0</div>
     </div>
     <div class="payday-kpi-grid">
@@ -1989,14 +2077,98 @@ body.sidebar-open #mob-hamburger span:nth-child(3) { transform: translateY(-7.5p
   <!-- 入力エリア（残金・給料日） -->
   <div class="payday-input-grid">
     <div class="payday-card">
-      <h3>現在残金</h3>
-      <input type="number" id="pd-balance" class="pd-inp" value="50000" placeholder="現在の残金（円）" oninput="pdUpdate()">
+      <h3>🏦 口座残高（現在）</h3>
+      <input type="number" id="pd-balance" class="pd-inp" value="0" placeholder="現在の口座残高（円）" oninput="pdUpdate()">
     </div>
     <div class="payday-card">
-      <h3>給料日</h3>
+      <h3>📅 給料日</h3>
       <input type="date" id="pd-payday" class="pd-inp" onchange="pdUpdate()">
       <div style="font-size:12px;color:var(--text-muted);margin-top:8px;" id="pd-payday-default"></div>
     </div>
+  </div>
+
+  <!-- 確定/見込みサマリー -->
+  <div class="payday-card">
+    <h3>📊 収支サマリー</h3>
+    <table class="pd-summary-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th class="pd-col-kakutei"><span class="pd-badge-kakutei">✓ 確定</span></th>
+          <th class="pd-col-mikomi"><span class="pd-badge-mikomi">◎ 見込み</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>📥 収入</td>
+          <td class="pd-col-kakutei"><span class="pd-val-income" id="pd-sum-kakutei-in">¥0</span></td>
+          <td class="pd-col-mikomi"><span class="pd-val-income" id="pd-sum-mikomi-in">¥0</span></td>
+        </tr>
+        <tr>
+          <td>📤 支出</td>
+          <td class="pd-col-kakutei"><span class="pd-val-expense" id="pd-sum-kakutei-ex">¥0</span></td>
+          <td class="pd-col-mikomi"><span class="pd-val-expense" id="pd-sum-mikomi-ex">¥0</span></td>
+        </tr>
+        <tr>
+          <td>💰 差引</td>
+          <td class="pd-col-kakutei"><span id="pd-sum-kakutei-bal">¥0</span></td>
+          <td class="pd-col-mikomi"><span id="pd-sum-mikomi-bal">¥0</span></td>
+        </tr>
+        <tr class="sim-row">
+          <td>🏦 口座残高（入金後）</td>
+          <td><span id="pd-sim-kakutei">¥0</span></td>
+          <td><span id="pd-sim-mikomi">¥0</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 貯蓄・投資目標 -->
+  <div class="pd-savings-card">
+    <h3 style="font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;">🐷 貯蓄・投資目標</h3>
+    <div class="pd-savings-row">
+      <label>先取り貯蓄</label>
+      <input class="pd-savings-inp" type="number" id="pd-savings-target" value="30000" oninput="pdUpdate()">
+      <span style="font-size:12px;color:var(--text-muted)">円/月</span>
+    </div>
+    <div class="pd-savings-row">
+      <label>投資積立</label>
+      <input class="pd-savings-inp" type="number" id="pd-invest-target" value="10000" oninput="pdUpdate()">
+      <span style="font-size:12px;color:var(--text-muted)">円/月</span>
+    </div>
+    <div class="pd-savings-result" id="pd-savings-result"></div>
+  </div>
+
+  <!-- 固定費 vs 変動費 -->
+  <div class="pd-fixed-card">
+    <h3 style="font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;">📌 固定費 vs 変動費</h3>
+    <div id="pd-fixed-bars"></div>
+    <div class="pd-ratio-wrap" id="pd-fixed-ratio"></div>
+    <div class="pd-fixed-legend">
+      <span><span class="pd-dot-fixed"></span>固定費</span>
+      <span><span class="pd-dot-variable"></span>変動費</span>
+    </div>
+  </div>
+
+  <!-- 支払い進捗 -->
+  <div class="payday-card">
+    <h3>✅ 支払い進捗</h3>
+    <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-bottom:6px;">
+      <span>支払い完了</span><span id="pd-progress-amount"></span>
+    </div>
+    <div style="background:#eee;border-radius:99px;height:12px;overflow:hidden;margin-bottom:6px;">
+      <div id="pd-progress-fill" style="height:100%;border-radius:99px;background:linear-gradient(90deg,#4CAF50,#81c784);transition:width .4s;width:0%"></div>
+    </div>
+    <div style="text-align:center;font-size:11px;color:var(--text-muted);" id="pd-progress-counts"></div>
+  </div>
+
+  <!-- カテゴリーフィルター -->
+  <div class="pd-filter-wrap" id="pd-filter-wrap"></div>
+
+  <!-- カテゴリー別合計 -->
+  <div class="payday-card">
+    <h3>🗂 カテゴリー別合計</h3>
+    <div class="pd-cat-grid" id="pd-cat-grid"></div>
   </div>
 
   <!-- キャッシュフロー タイムライン -->
@@ -2007,11 +2179,14 @@ body.sidebar-open #mob-hamburger span:nth-child(3) { transform: translateY(-7.5p
 
   <!-- 見込み入金 -->
   <div class="payday-card">
-    <h3>見込み入金</h3>
+    <h3>📥 見込み入金</h3>
     <div class="payday-input-row">
       <input type="number" id="pd-income-amount" class="pd-inp" placeholder="金額（円）">
       <input type="date" id="pd-income-date" class="pd-inp">
       <input type="text" id="pd-income-memo" class="pd-inp" placeholder="メモ（副業など）">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+      <select id="pd-income-cat" class="pd-inp"></select>
     </div>
     <button class="btn-pd-income" onclick="pdAddIncome()">＋ 追加</button>
     <div id="pd-income-list"></div>
@@ -2019,14 +2194,27 @@ body.sidebar-open #mob-hamburger span:nth-child(3) { transform: translateY(-7.5p
 
   <!-- 支払い予定 -->
   <div class="payday-card">
-    <h3>支払い予定</h3>
-    <div class="payday-input-row-2">
+    <h3>📤 支払い予定 <span style="font-size:11px;font-weight:400;color:var(--text-muted)">（金額クリックで編集）</span></h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
       <input type="number" id="pd-payment-amount" class="pd-inp" placeholder="金額（円）">
       <input type="date" id="pd-payment-date" class="pd-inp">
     </div>
-    <input type="text" id="pd-payment-memo" class="pd-inp" placeholder="メモ（家賃・光熱費など）" style="margin-bottom:12px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
+      <input type="text" id="pd-payment-memo" class="pd-inp" placeholder="メモ（家賃・光熱費など）">
+      <select id="pd-payment-cat" class="pd-inp"></select>
+      <select id="pd-payment-fixed" class="pd-inp">
+        <option value="1">🔒 固定費</option>
+        <option value="0">🔄 変動費</option>
+      </select>
+    </div>
     <button class="btn-pd-payment" onclick="pdAddPayment()">＋ 追加</button>
     <div id="pd-payment-list"></div>
+  </div>
+
+  <!-- 支出ランキング -->
+  <div class="payday-card" id="pd-rank-section" style="display:none;">
+    <h3>📈 支出ランキング</h3>
+    <div id="pd-rank-list"></div>
   </div>
 </div>
 
@@ -5595,14 +5783,78 @@ jpRenderTable();
     return { available, daily: Math.floor(available / days), weekly: Math.floor(available / weeks), days, nextPayday };
   }
 
-  // 画面更新
+  // ===== カテゴリー定義 =====
+  const PD_CATS = {
+    '住居':     { icon:'🏠', color:'#5c6bc0' },
+    '交通':     { icon:'🚃', color:'#26a69a' },
+    '通信':     { icon:'📱', color:'#42a5f5' },
+    '食費':     { icon:'🛒', color:'#ef5350' },
+    'サブスク': { icon:'💻', color:'#ab47bc' },
+    'エンタメ': { icon:'🎮', color:'#ff7043' },
+    '仕送り':   { icon:'💌', color:'#ec407a' },
+    '副業':     { icon:'💼', color:'#66bb6a' },
+    '給与':     { icon:'💰', color:'#ffa726' },
+    'その他':   { icon:'📦', color:'#78909c' },
+  };
+  let pdCurrentFilter = 'すべて';
+
+  function pdBuildCatSelects() {
+    const opts = Object.keys(PD_CATS).map(k => `<option value="${k}">${PD_CATS[k].icon} ${k}</option>`).join('');
+    ['pd-income-cat','pd-payment-cat'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.innerHTML = opts;
+    });
+  }
+
+  function pdCatTag(cat) {
+    const c = PD_CATS[cat] || PD_CATS['その他'];
+    return `<span class="pd-cat-tag" style="background:${c.color}22;color:${c.color}">${c.icon} ${cat}</span>`;
+  }
+
+  // ===== 初期データ投入（4/27分）=====
+  function pdSeedIfEmpty() {
+    const existing = JSON.parse(localStorage.getItem('kk_pd_payments') || '[]');
+    if (existing.length > 0) return; // すでにデータがあればスキップ
+
+    localStorage.setItem('kk_pd_balance', '0');
+    localStorage.setItem('kk_pd_payday',  '2026-04-27');
+
+    const incomes = [
+      { amount:230000, date:'2026-04-27', memo:'給料',  cat:'給与',  paid:false },
+      { amount: 60000, date:'2026-04-27', memo:'副業収入', cat:'副業', paid:false },
+    ];
+
+    const payments = [
+      { amount:100000, date:'2026-04-27', memo:'家賃',           cat:'住居',     fixed:true,  paid:false },
+      { amount: 21660, date:'2026-04-27', memo:'交通費定期券',    cat:'交通',     fixed:true,  paid:false },
+      { amount: 21059, date:'2026-04-27', memo:'携帯代',          cat:'通信',     fixed:true,  paid:false },
+      { amount: 20000, date:'2026-04-27', memo:'親へ仕送り',      cat:'仕送り',   fixed:true,  paid:false },
+      { amount: 20000, date:'2026-04-27', memo:'副業外注費',      cat:'副業',     fixed:false, paid:false },
+      { amount:  4779, date:'2026-04-27', memo:'豚細切れ 3.2kg',  cat:'食費',     fixed:false, paid:false },
+      { amount:  3400, date:'2026-04-27', memo:'Claude Pro',     cat:'サブスク', fixed:true,  paid:false },
+      { amount:  3393, date:'2026-04-27', memo:'楽天モバイル',    cat:'通信',     fixed:true,  paid:false },
+      { amount:  1680, date:'2026-04-27', memo:'Apple Music',    cat:'エンタメ', fixed:true,  paid:false },
+      { amount:  1600, date:'2026-04-27', memo:'Dropbox',        cat:'サブスク', fixed:true,  paid:false },
+      { amount:  1180, date:'2026-04-27', memo:'Canva プロ',     cat:'サブスク', fixed:true,  paid:false },
+      { amount:   980, date:'2026-04-27', memo:'Alive Studio',   cat:'サブスク', fixed:true,  paid:false },
+      { amount:   800, date:'2026-04-27', memo:'ColorSing ×2',  cat:'エンタメ', fixed:false, paid:false },
+      { amount:   580, date:'2026-04-27', memo:'nana プレミアム', cat:'エンタメ', fixed:true,  paid:false },
+      { amount:   480, date:'2026-04-27', memo:'Zaim プレミアム', cat:'サブスク', fixed:true,  paid:false },
+      { amount:   320, date:'2026-04-27', memo:'キングダム課金',  cat:'エンタメ', fixed:false, paid:false },
+    ];
+
+    localStorage.setItem('kk_pd_incomes',  JSON.stringify(incomes));
+    localStorage.setItem('kk_pd_payments', JSON.stringify(payments));
+  }
+
+  // ===== 画面更新 =====
   window.pdRender = function() {
+    pdSeedIfEmpty();
     const data = pdLoad();
     const el_balance = document.getElementById('pd-balance');
     const el_payday  = document.getElementById('pd-payday');
     if (el_balance) el_balance.value = data.balance;
     if (el_payday && data.payday) el_payday.value = data.payday;
-
+    pdBuildCatSelects();
     pdUpdate();
   };
 
@@ -5617,30 +5869,196 @@ jpRenderTable();
     pdSave(data);
 
     const c = pdCalc(data);
+
+    // メインKPI
     const avEl = document.getElementById('pd-available-balance');
     if (avEl) {
       avEl.textContent = pdFmtCur(c.available);
       avEl.className = 'payday-result-value' + (c.available < 0 ? ' pd-negative' : '');
     }
     const setTxt = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
-    setTxt('pd-weekly-budget', pdFmtCur(c.weekly));
-    setTxt('pd-daily-budget',  pdFmtCur(c.daily));
+    setTxt('pd-weekly-budget',  pdFmtCur(c.weekly));
+    setTxt('pd-daily-budget',   pdFmtCur(c.daily));
     setTxt('pd-payday-display', pdFormatDate(c.nextPayday));
-    setTxt('pd-days-until', c.days);
+    setTxt('pd-days-until',     c.days);
     setTxt('pd-payday-default', `デフォルト: ${pdFormatDate(pdGetNextPayday())}`);
 
+    // 確定/見込みサマリー
+    pdRenderSummary(data, c);
+
+    // 貯蓄・投資
+    pdRenderSavings(c);
+
+    // 固定費 vs 変動費
+    pdRenderFixedVar(data.payments);
+
+    // 進捗バー
+    pdRenderProgress(data.payments);
+
+    // カテゴリーフィルター
+    pdRenderFilterTabs(data);
+
+    // カテゴリー別合計
+    pdRenderCatGrid(data.payments);
+
+    // タイムライン・リスト
     pdRenderTimeline(data, c.nextPayday);
     pdRenderIncomeList(data.incomes);
     pdRenderPaymentList(data.payments);
+
+    // ランキング
+    pdRenderRanking(data.payments);
+
+    // 警告バナー
+    pdRenderAlert(data, c);
   };
+
+  function pdRenderSummary(data, c) {
+    const bankBal = parseInt((document.getElementById('pd-balance')||{}).value) || 0;
+    const totalIn  = data.incomes.reduce((s,i) => s + i.amount, 0);
+    const totalEx  = data.payments.reduce((s,p) => s + p.amount, 0);
+    const paidIn   = data.incomes.filter(i => i.paid).reduce((s,i) => s + i.amount, 0);
+    const paidEx   = data.payments.filter(p => p.paid).reduce((s,p) => s + p.amount, 0);
+
+    const kakuBal = paidIn - paidEx;
+    const mikoBal = totalIn - totalEx;
+
+    const setEl = (id, val, cls) => {
+      const e = document.getElementById(id); if (!e) return;
+      e.textContent = pdFmtCur(val);
+      if (cls) e.className = cls;
+    };
+    setEl('pd-sum-kakutei-in',  paidIn,  'pd-val-income');
+    setEl('pd-sum-mikomi-in',   totalIn, 'pd-val-income');
+    setEl('pd-sum-kakutei-ex',  paidEx,  'pd-val-expense');
+    setEl('pd-sum-mikomi-ex',   totalEx, 'pd-val-expense');
+    setEl('pd-sum-kakutei-bal', kakuBal, kakuBal >= 0 ? 'pd-val-pos' : 'pd-val-neg');
+    setEl('pd-sum-mikomi-bal',  mikoBal, mikoBal >= 0 ? 'pd-val-pos' : 'pd-val-neg');
+
+    const simK = bankBal + paidIn - paidEx;
+    const simM = bankBal + totalIn - totalEx;
+    setEl('pd-sim-kakutei', simK, simK >= 0 ? 'pd-val-pos' : 'pd-val-neg');
+    setEl('pd-sim-mikomi',  simM, simM >= 0 ? 'pd-val-pos' : 'pd-val-neg');
+  }
+
+  function pdRenderSavings(c) {
+    const st = parseInt((document.getElementById('pd-savings-target')||{}).value) || 0;
+    const it = parseInt((document.getElementById('pd-invest-target')||{}).value)  || 0;
+    const total = st + it;
+    const spendable = c.available - total;
+    const el = document.getElementById('pd-savings-result'); if (!el) return;
+    el.innerHTML = `
+      <div class="pd-savings-result-item">
+        <div class="pd-savings-result-label">貯蓄＋投資</div>
+        <div class="pd-savings-result-val pd-savings-color">${pdFmtCur(total)}</div>
+      </div>
+      <div class="pd-savings-result-item">
+        <div class="pd-savings-result-label">本当に使えるお金</div>
+        <div class="pd-savings-result-val ${spendable >= 0 ? 'pd-val-pos' : 'pd-val-neg'}">${pdFmtCur(spendable)}</div>
+      </div>`;
+  }
+
+  function pdRenderFixedVar(payments) {
+    const fixedTotal    = payments.filter(p => p.fixed).reduce((s,p) => s + p.amount, 0);
+    const variableTotal = payments.filter(p => !p.fixed).reduce((s,p) => s + p.amount, 0);
+    const total = fixedTotal + variableTotal;
+    const fPct  = total > 0 ? Math.round(fixedTotal / total * 100) : 0;
+    const vPct  = 100 - fPct;
+    const barsEl = document.getElementById('pd-fixed-bars');
+    const ratioEl = document.getElementById('pd-fixed-ratio');
+    if (barsEl) barsEl.innerHTML = `
+      <div class="pd-fixed-bar-wrap">
+        <div class="pd-fixed-bar-label"><span>🔒 固定費</span><span>${pdFmtCur(fixedTotal)} (${fPct}%)</span></div>
+        <div class="pd-fixed-bar-bg"><div class="pd-fixed-bar-fixed" style="width:${fPct}%"></div></div>
+      </div>
+      <div class="pd-fixed-bar-wrap">
+        <div class="pd-fixed-bar-label"><span>🔄 変動費</span><span>${pdFmtCur(variableTotal)} (${vPct}%)</span></div>
+        <div class="pd-fixed-bar-bg"><div class="pd-fixed-bar-variable" style="width:${vPct}%"></div></div>
+      </div>`;
+    if (ratioEl) ratioEl.innerHTML = `
+      <div class="pd-ratio-fixed" style="width:${fPct}%">${fPct > 10 ? fPct+'%' : ''}</div>
+      <div class="pd-ratio-variable" style="width:${vPct}%">${vPct > 10 ? vPct+'%' : ''}</div>`;
+  }
+
+  function pdRenderProgress(payments) {
+    const total   = payments.reduce((s,p) => s + p.amount, 0);
+    const paidAmt = payments.filter(p => p.paid).reduce((s,p) => s + p.amount, 0);
+    const paidCnt = payments.filter(p => p.paid).length;
+    const pct     = total > 0 ? Math.round(paidAmt / total * 100) : 0;
+    const fillEl  = document.getElementById('pd-progress-fill');
+    if (fillEl) fillEl.style.width = pct + '%';
+    const amtEl = document.getElementById('pd-progress-amount');
+    if (amtEl) amtEl.textContent = `${pdFmtCur(paidAmt)} / ${pdFmtCur(total)}`;
+    const cntEl = document.getElementById('pd-progress-counts');
+    if (cntEl) cntEl.textContent = `${paidCnt}件 支払い済み　／　${payments.length - paidCnt}件 未払い`;
+  }
+
+  function pdRenderFilterTabs(data) {
+    const el = document.getElementById('pd-filter-wrap'); if (!el) return;
+    const used = new Set([...data.payments.map(p => p.cat||'その他'), ...data.incomes.map(i => i.cat||'その他')]);
+    const cats = ['すべて', ...Object.keys(PD_CATS).filter(k => used.has(k))];
+    el.innerHTML = cats.map(c => `
+      <button class="pd-filter-btn ${pdCurrentFilter===c?'active':''}" onclick="pdSetFilter('${c}')">
+        ${c==='すべて' ? 'すべて' : (PD_CATS[c]?.icon||'') + ' ' + c}
+      </button>`).join('');
+  }
+
+  window.pdSetFilter = function(cat) { pdCurrentFilter = cat; pdUpdate(); };
+
+  function pdRenderCatGrid(payments) {
+    const el = document.getElementById('pd-cat-grid'); if (!el) return;
+    const totals = {};
+    payments.forEach(p => { const k = p.cat||'その他'; totals[k] = (totals[k]||0) + p.amount; });
+    el.innerHTML = Object.entries(totals).sort((a,b)=>b[1]-a[1]).map(([cat,amt]) => {
+      const c = PD_CATS[cat] || PD_CATS['その他'];
+      return `<div class="pd-cat-item">
+        <span class="pd-cat-icon">${c.icon}</span>
+        <div><div class="pd-cat-name">${cat}</div><div class="pd-cat-amt">${pdFmtCur(amt)}</div></div>
+      </div>`;
+    }).join('');
+  }
+
+  function pdRenderRanking(payments) {
+    const sec = document.getElementById('pd-rank-section');
+    const el  = document.getElementById('pd-rank-list');
+    if (!sec || !el || payments.length === 0) { if(sec) sec.style.display='none'; return; }
+    sec.style.display = 'block';
+    const sorted = [...payments].sort((a,b) => b.amount - a.amount);
+    const max = sorted[0].amount;
+    el.innerHTML = sorted.map(p => {
+      const c = PD_CATS[p.cat||'その他'] || PD_CATS['その他'];
+      return `<div class="pd-rank-item">
+        <div class="pd-rank-label">
+          <span>${p.paid?'✓ ':''} ${p.memo||'（無題）'} ${c.icon} ${p.fixed?'🔒':'🔄'}</span>
+          <span>${pdFmtCur(p.amount)}</span>
+        </div>
+        <div class="pd-rank-bg"><div class="pd-rank-fill" style="width:${(p.amount/max*100).toFixed(1)}%;background:${p.paid?'#ccc':c.color}"></div></div>
+      </div>`;
+    }).join('');
+  }
+
+  function pdRenderAlert(data, c) {
+    const el = document.getElementById('pd-alert-banner'); if (!el) return;
+    const st = parseInt((document.getElementById('pd-savings-target')||{}).value) || 0;
+    const it = parseInt((document.getElementById('pd-invest-target')||{}).value)  || 0;
+    if (c.available < 0) {
+      el.textContent = `⚠️ 利用可能残金がマイナスです（${pdFmtCur(c.available)}）。支出を見直してください。`;
+      el.classList.add('show');
+    } else if (c.available < st + it) {
+      el.textContent = `⚠️ 残金（${pdFmtCur(c.available)}）が貯蓄・投資目標（${pdFmtCur(st+it)}）を下回っています。`;
+      el.classList.add('show');
+    } else {
+      el.classList.remove('show');
+    }
+  }
 
   function pdRenderTimeline(data, nextPayday) {
     const box = document.getElementById('pd-timeline-box');
     const list = document.getElementById('pd-timeline-list');
     if (!box || !list) return;
     const events = [];
-    data.payments.forEach(p => events.push({ type:'payment', date:p.date, amount:p.amount, memo:p.memo||'', paid:!!p.paid }));
-    data.incomes.forEach(i  => events.push({ type:'income',  date:i.date, amount:i.amount, memo:i.memo||'', paid:false }));
+    data.payments.forEach(p => events.push({ type:'payment', date:p.date, amount:p.amount, memo:p.memo||'', paid:!!p.paid, cat:p.cat||'その他' }));
+    data.incomes.forEach(i  => events.push({ type:'income',  date:i.date, amount:i.amount, memo:i.memo||'', paid:!!i.paid, cat:i.cat||'その他' }));
     events.push({ type:'payday', date:nextPayday, amount:0, paid:false });
     events.sort((a,b) => new Date(a.date) - new Date(b.date));
     if (events.length > 0) {
@@ -5650,12 +6068,13 @@ jpRenderTable();
         const paidBadge = (ev.type==='payment' && ev.paid) ? '<span class="pd-paid-badge">支払済</span>' : '';
         const amtColor = ev.paid ? '#aaa' : (ev.type==='income'?'#00D084':'#FF9671');
         const amtStyle = ev.paid ? 'text-decoration:line-through;' : '';
-        const amtHtml = isPayday ? '' : `<span style="font-weight:700;color:${amtColor};${amtStyle}">${ev.type==='payment'?'-':'+'} ${pdFmtCur(ev.amount)}</span>`;
+        const amtHtml  = isPayday ? '' : `<span style="font-weight:700;color:${amtColor};${amtStyle}">${ev.type==='payment'?'-':'+'} ${pdFmtCur(ev.amount)}</span>`;
+        const catHtml  = (!isPayday && ev.cat) ? `<span style="font-size:10px;margin-left:4px;">${(PD_CATS[ev.cat]||PD_CATS['その他']).icon}</span>` : '';
         const memoHtml = ev.memo ? `<div style="font-size:11px;color:#888;margin-top:2px;">${ev.memo}</div>` : '';
-        const label = isPayday ? '<div style="font-size:11px;color:#FF6B9D;font-weight:700;">給料日</div>' : '';
+        const label    = isPayday ? '<div style="font-size:11px;color:#FF6B9D;font-weight:700;">給料日</div>' : '';
         const paidClass = (ev.type==='payment' && ev.paid) ? ' paid' : '';
         return `<div class="pd-timeline-item ${ev.type}${paidClass}">
-          <div><strong>${pdFormatDate(ev.date)}</strong>${paidBadge}${label}${memoHtml}</div>
+          <div><strong>${pdFormatDate(ev.date)}</strong>${catHtml}${paidBadge}${label}${memoHtml}</div>
           ${amtHtml}
         </div>`;
       }).join('');
@@ -5666,44 +6085,88 @@ jpRenderTable();
 
   function pdRenderIncomeList(incomes) {
     const el = document.getElementById('pd-income-list'); if (!el) return;
-    el.innerHTML = incomes.map((item,i) => `
+    const filtered = pdCurrentFilter === 'すべて' ? incomes.map((x,i)=>({...x,_i:i}))
+      : incomes.map((x,i)=>({...x,_i:i})).filter(x => (x.cat||'その他') === pdCurrentFilter);
+    el.innerHTML = filtered.map(item => `
       <div class="pd-item-card income">
-        <div>
-          <div style="font-weight:700;">${pdFmtCur(item.amount)}</div>
-          <div style="font-size:12px;color:#666;">${pdFormatDate(item.date)}${item.memo ? '　'+item.memo : ''}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <span style="font-weight:700;" id="pd-inc-amt-${item._i}" class="pd-amt-editable" onclick="pdStartEditAmt('income',${item._i})">${pdFmtCur(item.amount)}</span>
+            ${pdCatTag(item.cat||'その他')}
+          </div>
+          <div style="font-size:12px;color:#666;margin-top:2px;">${pdFormatDate(item.date)}${item.memo ? '　'+item.memo : ''}</div>
         </div>
-        <button class="pd-item-del" style="background:#FF9671;" onclick="pdRemoveIncome(${i})">削除</button>
+        <button class="pd-item-del" style="background:#FF9671;" onclick="pdRemoveIncome(${item._i})">削除</button>
       </div>`).join('');
   }
 
   function pdRenderPaymentList(payments) {
     const el = document.getElementById('pd-payment-list'); if (!el) return;
-    el.innerHTML = payments.map((item,i) => {
+    const filtered = (pdCurrentFilter === 'すべて' ? payments.map((x,i)=>({...x,_i:i}))
+      : payments.map((x,i)=>({...x,_i:i})).filter(x => (x.cat||'その他') === pdCurrentFilter)
+    ).sort((a,b) => { if(a.paid!==b.paid) return a.paid?1:-1; return b.amount-a.amount; });
+
+    el.innerHTML = filtered.map(item => {
       const isPaid = !!item.paid;
-      const paidClass = isPaid ? ' paid' : '';
       const paidLabel = isPaid ? '<span class="pd-paid-label">支払済</span>' : '';
-      const amtStyle = isPaid ? 'text-decoration:line-through;color:#aaa;' : 'color:#FF6B9D;';
+      const amtStyle  = isPaid ? 'text-decoration:line-through;color:#aaa;' : 'color:#FF6B9D;';
       return `
-      <div class="pd-item-card payment${paidClass}">
+      <div class="pd-item-card payment${isPaid?' paid':''}">
         <div style="display:flex;align-items:center;flex:1;min-width:0;">
-          <input type="checkbox" class="pd-paid-check" ${isPaid?'checked':''} onchange="pdTogglePaid(${i},this.checked)" title="支払済にする">
-          <div style="min-width:0;">
-            <div class="pd-payment-amount" style="font-weight:700;${amtStyle}">${pdFmtCur(item.amount)}${paidLabel}</div>
-            <div style="font-size:12px;color:#666;">${pdFormatDate(item.date)}${item.memo ? '　'+item.memo : ''}</div>
+          <input type="checkbox" class="pd-paid-check" ${isPaid?'checked':''} onchange="pdTogglePaid(${item._i},this.checked)">
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+              <span class="pd-payment-amount pd-amt-editable" id="pd-pay-amt-${item._i}" style="font-weight:700;${amtStyle}" onclick="pdStartEditAmt('payment',${item._i})">${pdFmtCur(item.amount)}${paidLabel}</span>
+              ${pdCatTag(item.cat||'その他')}
+              <button class="pd-type-toggle ${item.fixed?'fixed':'variable'}" onclick="pdToggleFixed(${item._i})">${item.fixed?'🔒 固定':'🔄 変動'}</button>
+            </div>
+            <div style="font-size:11px;color:#666;margin-top:2px;">${pdFormatDate(item.date)}${item.memo ? '　'+item.memo : ''}</div>
           </div>
         </div>
-        <button class="pd-item-del" style="background:#FF6B9D;margin-left:8px;" onclick="pdRemovePayment(${i})">削除</button>
+        <button class="pd-item-del" style="background:#FF6B9D;margin-left:8px;" onclick="pdRemovePayment(${item._i})">削除</button>
       </div>`;
     }).join('');
   }
+
+  // 金額インライン編集
+  window.pdStartEditAmt = function(type, idx) {
+    const id  = type === 'income' ? `pd-inc-amt-${idx}` : `pd-pay-amt-${idx}`;
+    const cell = document.getElementById(id); if (!cell) return;
+    const data = pdLoad();
+    const cur  = type === 'income' ? data.incomes[idx].amount : data.payments[idx].amount;
+    cell.outerHTML = `<input class="pd-amt-input" id="pd-amt-inp-${type}-${idx}" type="number" value="${cur}"
+      onblur="pdSaveAmt('${type}',${idx},this.value)"
+      onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')pdUpdate();">`;
+    const inp = document.getElementById(`pd-amt-inp-${type}-${idx}`);
+    if (inp) { inp.focus(); inp.select(); }
+  };
+
+  window.pdSaveAmt = function(type, idx, val) {
+    const n = parseInt(val);
+    if (!isNaN(n) && n > 0) {
+      const data = pdLoad();
+      if (type === 'income')  data.incomes[idx].amount  = n;
+      else                    data.payments[idx].amount = n;
+      pdSave(data);
+    }
+    pdUpdate();
+  };
+
+  window.pdToggleFixed = function(idx) {
+    const data = pdLoad();
+    if (!data.payments[idx]) return;
+    data.payments[idx].fixed = !data.payments[idx].fixed;
+    pdSave(data); pdUpdate();
+  };
 
   window.pdAddIncome = function() {
     const a = parseInt(document.getElementById('pd-income-amount').value);
     const d = document.getElementById('pd-income-date').value;
     const m = document.getElementById('pd-income-memo').value;
+    const cat = (document.getElementById('pd-income-cat')||{}).value || 'その他';
     if (!a || a <= 0 || !d) { showToast('金額と日付を入力してください'); return; }
     const data = pdLoad();
-    data.incomes.push({ amount:a, date:d, memo:m });
+    data.incomes.push({ amount:a, date:d, memo:m, cat, paid:false });
     pdSave(data);
     document.getElementById('pd-income-amount').value = '';
     document.getElementById('pd-income-date').value   = '';
@@ -5713,19 +6176,18 @@ jpRenderTable();
   };
 
   window.pdRemoveIncome = function(i) {
-    const data = pdLoad();
-    data.incomes.splice(i, 1);
-    pdSave(data);
-    pdUpdate();
+    const data = pdLoad(); data.incomes.splice(i,1); pdSave(data); pdUpdate();
   };
 
   window.pdAddPayment = function() {
     const a = parseInt(document.getElementById('pd-payment-amount').value);
     const d = document.getElementById('pd-payment-date').value;
     const m = document.getElementById('pd-payment-memo').value;
+    const cat   = (document.getElementById('pd-payment-cat')||{}).value   || 'その他';
+    const fixed = (document.getElementById('pd-payment-fixed')||{}).value === '1';
     if (!a || a <= 0 || !d) { showToast('金額と日付を入力してください'); return; }
     const data = pdLoad();
-    data.payments.push({ amount:a, date:d, memo:m, paid:false });
+    data.payments.push({ amount:a, date:d, memo:m, paid:false, cat, fixed });
     pdSave(data);
     document.getElementById('pd-payment-amount').value = '';
     document.getElementById('pd-payment-date').value   = '';
@@ -5735,19 +6197,14 @@ jpRenderTable();
   };
 
   window.pdRemovePayment = function(i) {
-    const data = pdLoad();
-    data.payments.splice(i, 1);
-    pdSave(data);
-    pdUpdate();
+    const data = pdLoad(); data.payments.splice(i,1); pdSave(data); pdUpdate();
   };
 
-  // ★ 支払済トグル
   window.pdTogglePaid = function(i, checked) {
     const data = pdLoad();
     if (data.payments[i] === undefined) return;
     data.payments[i].paid = !!checked;
-    pdSave(data);
-    pdUpdate();
+    pdSave(data); pdUpdate();
     showToast(checked ? '✅ 支払済にしました' : '↩️ 未払いに戻しました');
   };
 
